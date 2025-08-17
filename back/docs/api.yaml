@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: API Backend - Sistema de Autenticación
+  version: 1.0.0
+  description: API para manejo de usuarios, invitados y tokens con blacklist
+  contact:
+    name: Desarrollador
+    email: dev@ejemplo.cl
+
+servers:
+  - url: http://localhost:{port}
+    description: Servidor de desarrollo
+    variables:
+      port:
+        default: '3000'
+        description: Puerto del servidor backend
+
+tags:
+  - name: Usuarios
+    description: Gestión de usuarios y autenticación
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        ID:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "Juan Pérez"
+        email:
+          type: string
+          example: "juan@ejemplo.com"
+        rol:
+          type: string
+          example: "usuario"
+    
+    Token:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    
+    Invitado:
+      type: object
+      properties:
+        invitadoId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Mensaje de error"
+
+paths:
+  /usuarios/invitado:
+    post:
+      summary: Crear usuario invitado
+      tags: [Usuarios]
+      description: Genera un usuario invitado con UUID único y token sin expiración
+      responses:
+        '200':
+          description: Invitado creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitado'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /usuarios/register:
+    post:
+      summary: Registrar nuevo usuario
+      tags: [Usuarios]
+      description: Crea una cuenta de usuario registrado. Opcionalmente acepta invitadoId para migrar de invitado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+                - email
+                - password
+                - confirmPass
+              properties:
+                nombre:
+                  type: string
+                  example: "Juan Pérez"
+                email:
+                  type: string
+                  format: email
+                  example: "juan@ejemplo.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "password123"
+                confirmPass:
+                  type: string
+                  example: "password123"
+                invitadoId:
+                  type: string
+                  format: uuid
+                  description: "UUID del invitado a migrar (opcional)"
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Usuario creado correctamente"
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /usuarios/login:
+    post:
+      summary: Iniciar sesión
+      tags: [Usuarios]
+      description: Autentica usuario y retorna tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "juan@ejemplo.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Usuario:
+                    $ref: '#/components/schemas/Usuario'
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '400':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /usuarios/refresh-token:
+    post:
+      summary: Refrescar token
+      tags: [Usuarios]
+      description: Genera nuevo access token usando refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: Token refrescado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        '401':
+          description: Refresh token requerido
+        '403':
+          description: Token inválido o revocado
+
+  /usuarios/logout:
+    post:
+      summary: Cerrar sesión
+      tags: [Usuarios]
+      description: Revoca el token actual
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout exitoso"
+        '400':
+          description: Token requerido
+
+  /usuarios/logout-all:
+    post:
+      summary: Cerrar todas las sesiones
+      tags: [Usuarios]
+      description: Revoca todos los tokens del usuario
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout global exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout global exitoso"
+        '400':
+          description: Token requerido

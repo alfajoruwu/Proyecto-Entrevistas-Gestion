@@ -1,0 +1,45 @@
+services:
+  express:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    ports:
+      - ${PORTBACK}:${PORTBACK}
+    volumes:
+      - ./back:/app
+    env_file:
+      - .env
+
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - ${PORTFRONT}:${PORTFRONT}
+    volumes:
+      - ./front:/app
+    env_file:
+      - .env
+
+  postgres:
+    image: postgres:17
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - postgres_data1:/var/lib/postgresql/data
+      - ./DB/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - .env
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - ${ADMINER_PORT}:${ADMINER_PORT}
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+
+volumes:
+  postgres_data1:
+  postgres_data2:

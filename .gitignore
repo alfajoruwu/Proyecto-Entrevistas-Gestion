@@ -1,0 +1,12 @@
+.env
+/node_modules
+/dist
+/front/node_modules
+/front/dist
+
+/back/node_modules
+/back/dist
+/front/.env
+/back/.env
+
+

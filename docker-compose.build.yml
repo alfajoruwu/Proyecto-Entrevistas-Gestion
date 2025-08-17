@@ -1,0 +1,42 @@
+services:
+
+  express:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.build
+    ports:
+      - ${PORTBACK}:${PORTBACK}
+    volumes:
+      - ./back:/app
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./front/dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    env_file:
+      - .env
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - postgres_data1:/var/lib/postgresql/data
+      - ./DB/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - ${ADMINER_PORT}:${ADMINER_PORT}
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+volumes:
+  postgres_data1:
