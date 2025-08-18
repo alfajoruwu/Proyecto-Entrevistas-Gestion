@@ -8,19 +8,38 @@ CREATE TABLE Usuarios (
 );
 
 
-CREATE TABLE BaseDatos (
+
+CREATE TABLE CASOS (
+    Creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ID SERIAL PRIMARY KEY,
     Nombre TEXT,
-    ID_DB VARCHAR(100),
-    SQL_init TEXT,
-    Descripcion TEXT,
-    Resumen TEXT,
-    ID_Usuario int,
-    Fecha_Creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (ID_Usuario)
-        REFERENCES Usuarios(ID)
-        ON DELETE SET NULL
+    Tipo TEXT,
+    Resumen TEXT
 );
+
+
+CREATE TABLE Afectados (
+    Creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ID SERIAL PRIMARY KEY,
+    Nombre TEXT,
+    Cargo TEXT,
+    Carrera TEXT,
+    Telefono TEXT,
+    Correo TEXT
+);
+
+
+CREATE TABLE Entrevistas (
+    Creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ID SERIAL PRIMARY KEY,
+    lugar TEXT,
+    Asistentes int,
+    Fecha_Hora TEXT,
+    Estado TEXT,
+    FOREIGN KEY (Asistentes) REFERENCES Afectados(ID)
+);
+
+
 
 
 CREATE TABLE IF NOT EXISTS Invitados (
@@ -73,4 +92,7 @@ BEGIN
     RETURN deleted_count;
 END;
 $$ LANGUAGE plpgsql;
+
+-- NOTA: El usuario por defecto se debe crear desde la aplicación backend
+-- usando las variables de entorno para mayor seguridad
 

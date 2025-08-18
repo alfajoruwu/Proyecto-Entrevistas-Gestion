@@ -80,38 +80,18 @@ const Navbar = ({ MenuLateral = true }) => {
                                     <li><a>  <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                                         <div className="drawer-content">
                                             <label htmlFor="my-drawer" className="drawer-button">
-                                                <a class="pl-2 text-xl font-bold ">NOMBRE_APP</a>
+                                                <a class="pl-2 text-xl font-bold ">Entrevistas</a>
                                             </label>
                                         </div></a></li>
 
                                     <div class="divider"></div>
 
 
-                                    <li><a onClick={() => IrEjercicios()}>Resolver ejercicios</a></li>
+                                    <li><a onClick={() => IrEjercicios()}>Casos</a></li>
 
-                                    {Nombre != '' && Rol !== 'invitado' &&
-                                        <li>
-                                            <details className="collapse  border-base-300 ">
-                                                <summary className="collapse-title">Crear ejercicios</summary>
-                                                <div className="collapse-content text-sm">
-                                                    <ul>
-                                                        <li>
-                                                            <a onClick={() => IrCrearEjercicio()}>Crear nuevo ejercicio</a>
-                                                            <a onClick={() => IrCrearBaseDatos()}>Crear base de datos</a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </details>
-                                        </li>
-                                    }
 
-                                    {Rol === 'invitado' &&
-                                        <li>
-                                            <a onClick={() => IrRegistro()} className="text-info cursor-pointer">
-                                                Registrarte para guardar el progreso
-                                            </a>
-                                        </li>
-                                    }
+
+
                                     <div class="divider"></div>
                                     <li>
                                         <div className='flex'>
@@ -127,7 +107,7 @@ const Navbar = ({ MenuLateral = true }) => {
                 </div>
 
                 <div class="flex-1">
-                    <a class="pl-2 text-xl font-bold text-primary-content">NOMBRE_APP</a>
+                    <a class="pl-2 text-xl font-bold text-primary-content">Entrevistas</a>
                 </div>
 
                 {Nombre != '' &&
@@ -151,11 +131,7 @@ const Navbar = ({ MenuLateral = true }) => {
                     </div>
                 }
 
-                {Nombre == '' &&
-                    <button onClick={() => IrloginSimple()} className='btn btn-secondary'>
-                        Iniciar sesión
-                    </button>
-                }
+
 
             </div >
 

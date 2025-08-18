@@ -42,6 +42,50 @@ app.use('/usuarios', usuarios);
 
 // -------------------- SETUP INICIAL ----------------------
 
+// Función para crear usuario por defecto de forma segura
+async function createDefaultUser() {
+  try {
+    const bcrypt = require('bcrypt');
+
+    // Obtener datos del usuario por defecto desde variables de entorno
+    const defaultUser = {
+      nombre: process.env.DEFAULT_USER_NAME || 'admin',
+      email: process.env.DEFAULT_USER_EMAIL || 'admin@empresa.com',
+      password: process.env.DEFAULT_USER_PASSWORD || 'admin123', // Contraseña sin hashear
+      rol: process.env.DEFAULT_USER_ROLE || 'admin'
+    };
+
+    // Verificar si el usuario ya existe
+    const existingUser = await pool.query(
+      'SELECT id FROM Usuarios WHERE nombre = $1 OR email = $2',
+      [defaultUser.nombre, defaultUser.email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      console.log('✅ Usuario administrador ya existe');
+      return;
+    }
+
+    // Hashear la contraseña
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(defaultUser.password, saltRounds);
+
+    // Insertar usuario por defecto
+    await pool.query(
+      'INSERT INTO Usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4)',
+      [defaultUser.nombre, defaultUser.email, hashedPassword, defaultUser.rol]
+    );
+
+    console.log('🔐 Usuario administrador creado exitosamente');
+    console.log(`   Usuario: ${defaultUser.nombre}`);
+    console.log(`   Email: ${defaultUser.email}`);
+    console.log(`   Rol: ${defaultUser.rol}`);
+
+  } catch (error) {
+    console.error('❌ Error creando usuario por defecto:', error.message);
+  }
+}
+
 //app.use('/ejemplos', ejemplos);
 //app.use('/ejemplos-protegida', ejemploProtegida);
 
@@ -68,9 +112,10 @@ cron.schedule('0 2 * * *', () => {
 });
 
 // Limpieza inicial al arrancar el servidor (opcional)
-setTimeout(() => {
-  console.log('🚀 Ejecutando limpieza inicial de tokens...');
-  cleanupTokens();
+setTimeout(async () => {
+  console.log('🚀 Iniciando configuración inicial...');
+  await createDefaultUser(); // Crear usuario por defecto
+  await cleanupTokens();      // Limpiar tokens
 }, 5000); // Espera 5 segundos para que la DB esté lista
 
 app.get('/', (req, res) => {

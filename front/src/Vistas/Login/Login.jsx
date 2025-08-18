@@ -101,7 +101,7 @@ const Login = () => {
                     <div className='card-body flex flex-col gap-2'>
 
                         <div className='flex '>
-                            <h1 className="text-2xl font-bold" >SQL Faciltio</h1>
+                            <h1 className="text-2xl font-bold" >Registro de entrevistas</h1>
                         </div>
 
                         <div class="divider"></div>
@@ -116,11 +116,10 @@ const Login = () => {
 
                         <button onClick={() => EnvioLogin(Usuario, Contrasna)} className="btn btn-primary">Iniciar sesión</button>
 
-                        <div class="divider"></div>
-
+                        {/* 
                         <button onClick={() => IrRegistro()} className="btn btn-secondary">Crear cuenta</button>
                         <button onClick={() => IngresarComoInvitado()} className="btn btn-accent">Ingresar como invitado</button>
-
+ */}
 
                     </div>
                 </div>
