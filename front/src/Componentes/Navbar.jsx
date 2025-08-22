@@ -88,6 +88,7 @@ const Navbar = ({ MenuLateral = true }) => {
 
 
                                     <li><a onClick={() => IrEjercicios()}>Casos</a></li>
+                                    <li><a onClick={() => IrEjercicios()}>Estadisticas</a></li>
 
 
 

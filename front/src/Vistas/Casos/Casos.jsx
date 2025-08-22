@@ -1,8 +1,54 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Navbar from '../../Componentes/Navbar'
+import Calendar from "react-calendar";
+import 'react-calendar/dist/Calendar.css';
+
+
 
 const Casos = () => {
 
+    // -------- Manejo de modals ------------
+
+    // --------- Modal Añadir integrantes
+    const CerrarModalAñadirIntegrantes = () => {
+        document.getElementById('AñadirIntegrantes').close()
+    }
+
+    const GuardarAñadirIntegrantes = () => {
+        // Enviar al backend el guardar integrantes
+        document.getElementById('AñadirIntegrantes').close()
+    }
+
+    // --------------------------------------
+
+    // --------- Modal Crear nueva entrevista
+    const CancelarModalEntrevista = () => {
+        document.getElementById('CrearEntrevistas').close()
+    }
+
+    const GuardarModalEntrevista = () => {
+        document.getElementById('CrearEntrevistas').close()
+    }
+
+
+    // Modal Entrevistas
+    const [date, setDate] = useState(new Date());
+    const [Integrantes, SetIntegrantes] = useState([])
+    const SetterIntegrantes = (event) => {
+        SetIntegrantes(event.target.value)
+    }
+
+    const AñadirIntegrante = (Integrante) => {
+        SetIntegrantes([...Integrantes, Integrante])
+        console.log("Añadido")
+    }
+
+    const RetirarIntegrante = (Integrante) => {
+        SetIntegrantes(Integrantes.filter(item => item !== Integrante))
+        console.log("Eliminado")
+    }
+
+    // Variables
     const [Seleccionado, SetSeleccionado] = useState('entrevistas')
     const [entrevistas, setEntrevistas] = useState([])
     const [afectados, setAfectados] = useState([])
@@ -62,6 +108,7 @@ const Casos = () => {
         // Datos simulados de afectados
         const afectadosSimulados = [
             {
+                id: 1,
                 Nombre: "Ana Gabriela Martínez",
                 Carrera: "Ingeniería en Sistemas",
                 Correo: "ana.martinez@universidad.edu",
@@ -69,6 +116,7 @@ const Casos = () => {
                 Cargo: "alumno"
             },
             {
+                id: 2,
                 Nombre: "Dr. Carlos Roberto Vega",
                 Carrera: "Ciencias de la Computación",
                 Correo: "carlos.vega@universidad.edu",
@@ -76,6 +124,7 @@ const Casos = () => {
                 Cargo: "docente"
             },
             {
+                id: 3,
                 Nombre: "María Elena Rodríguez",
                 Carrera: "Administración",
                 Correo: "maria.rodriguez@universidad.edu",
@@ -83,6 +132,7 @@ const Casos = () => {
                 Cargo: "funcionario"
             },
             {
+                id: 4,
                 Nombre: "Luis Fernando Herrera",
                 Carrera: "Derecho",
                 Correo: "luis.herrera@universidad.edu",
@@ -90,6 +140,7 @@ const Casos = () => {
                 Cargo: "alumno"
             },
             {
+                id: 5,
                 Nombre: "Dra. Patricia Sánchez",
                 Carrera: "Psicología",
                 Correo: "patricia.sanchez@universidad.edu",
@@ -97,6 +148,7 @@ const Casos = () => {
                 Cargo: "docente"
             },
             {
+                id: 6,
                 Nombre: "Jorge Alberto Morales",
                 Carrera: "Recursos Humanos",
                 Correo: "jorge.morales@universidad.edu",
@@ -104,6 +156,7 @@ const Casos = () => {
                 Cargo: "funcionario"
             },
             {
+                id: 7,
                 Nombre: "Isabella Torres López",
                 Carrera: "Medicina",
                 Correo: "isabella.torres@universidad.edu",
@@ -231,7 +284,7 @@ const Casos = () => {
                     <div className='flex flex-col gap-2 p-3'>
                         <div className='flex justify-between'>
                             <h2 className='text-2xl font-bold'>Entrevistas ({entrevistas.length})</h2>
-                            <button className='btn btn-accent'>Crear nueva entrevista</button>
+                            <button className="btn btn-accent" onClick={() => document.getElementById('CrearEntrevistas').showModal()}>Crear nueva entrevista</button>
                         </div>
 
                         <div className='flex gap-2 p-3'>
@@ -252,7 +305,7 @@ const Casos = () => {
                                                     <h3 className="card-title text-lg">Entrevista #{entrevista.id}</h3>
                                                     <div className="flex flex-col gap-2 mt-2">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="badge badge-primary">📅</span>
+
                                                             <span className="text-sm">
                                                                 {entrevista.hora.toLocaleString('es-ES', {
                                                                     year: 'numeric',
@@ -264,11 +317,10 @@ const Casos = () => {
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="badge badge-secondary">📍</span>
                                                             <span className="text-sm">{entrevista.lugar}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="badge badge-accent">👥</span>
+
                                                             <span className="text-sm">
                                                                 Integrantes: {entrevista.id_integrantes.join(', ')}
                                                             </span>
@@ -296,7 +348,7 @@ const Casos = () => {
                     <div className='flex flex-col gap-2 p-3'>
                         <div className='flex justify-between'>
                             <h2 className='text-2xl font-bold'>Afectados ({afectados.length})</h2>
-                            <button className='btn btn-accent'>Agregar afectado</button>
+                            <button className="btn btn-accent" onClick={() => document.getElementById('AñadirAfectado').showModal()}>Agregar afectado</button>
                         </div>
 
                         <div className='flex gap-2 p-3'>
@@ -317,19 +369,15 @@ const Casos = () => {
                                                     <h3 className="card-title text-lg">{afectado.Nombre}</h3>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="badge badge-primary">🎓</span>
                                                             <span className="text-sm">{afectado.Carrera}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="badge badge-secondary">📧</span>
                                                             <span className="text-sm">{afectado.Correo}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="badge badge-accent">📞</span>
                                                             <span className="text-sm">{afectado.Telefono}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="badge badge-info">👤</span>
                                                             <span className={`badge ${afectado.Cargo === 'docente' ? 'badge-success' :
                                                                 afectado.Cargo === 'alumno' ? 'badge-warning' :
                                                                     'badge-neutral'
@@ -385,7 +433,7 @@ const Casos = () => {
                                                     </p>
                                                 </div>
                                                 <div className="card-actions flex flex-col gap-2">
-                                                    <button 
+                                                    <button
                                                         className="btn btn-primary btn-sm"
                                                         onClick={() => console.log('Ver resultados de entrada:', entrada.id)}
                                                     >
@@ -405,6 +453,131 @@ const Casos = () => {
 
 
             {/* --------------- MODAL ------------------- */}
+
+
+
+            {/* ENTREVISTAS */}
+
+            <dialog id="CrearEntrevistas" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg">Crear nueva entrevista</h3>
+
+                    <p className="pt-4">Fecha:</p>
+                    <div className='flex'>
+                        <input className='flex-1 input input-bordered' type="date" id="date" name="date"></input>
+                    </div>
+
+                    <p className="pt-4">Hora:</p>
+                    <div className='flex'>
+                        <input className='flex-1 input input-bordered' type="time" id="time" name="time"></input>
+                    </div>
+
+                    <p className="pt-4">Lugar:</p>
+                    <div className='flex'>
+                        <input className='flex-1 input input-bordered' type="text" id="lugar" name="lugar"></input>
+                    </div>
+                    <div className='flex justify-between pt-3'>
+                        <p className="">Integrantes:</p>
+                        <button className="btn btn-accent" onClick={() => document.getElementById('AñadirIntegrantes').showModal()}>Añadir integrante</button>
+                    </div>
+                    <div className="flex flex-col shadow-md p-3">
+                        {Integrantes.length === 0 ? (
+                            <span>Añade nuevos integrantes</span>
+                        ) : (
+                            <div className="flex max-h-[20vh] overflow-auto flex-wrap gap-2">
+                                {Integrantes.map((integrante) => (
+                                    <div key={integrante} className="bg-gray-100 p-2 rounded shadow-sm">
+                                        {afectados.find(item => item.id === integrante).Nombre}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="modal-action">
+                        <button onClick={() => CancelarModalEntrevista()} className='btn btn-error'>Cancelar</button>
+                        <button onClick={() => GuardarModalEntrevista} className='btn btn-success'>Guardar</button>
+                    </div>
+                </div>
+            </dialog>
+
+            {/* Modal de integrantes */}
+
+
+            <dialog id="AñadirIntegrantes" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg">Integrantes</h3>
+
+
+                    <div className='pb-3'>
+                        <p className="py-4">Selecciona a quien añadir</p>
+                        <div className='flex'>
+                            <input type="text" className='flex-1 input' placeholder='Buscar' />
+                        </div>
+                    </div>
+
+                    {/* Cartas de integrantes */}
+
+                    {afectados.length === 0 ? (
+                        <div className="text-center text-gray-500 py-8">
+                            <p>Cargando afectados...</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">
+                            {afectados.map((afectado, index) => (
+                                <div key={index} className='flex items-center rounded-2xl bg-base-200'>
+                                    <div className='flex flex-1 flex-col p-3'>
+                                        <p className='text-xl'>{afectado.Nombre}</p>
+                                        <p className='text-xs'>Carrera: {afectado.Carrera}</p>
+                                        <p className='text-xs'>Rol: {afectado.Cargo.charAt(0).toUpperCase() + afectado.Cargo.slice(1)}</p>
+                                    </div>
+                                    <div className='flex'>
+                                        {!Integrantes.includes(afectado.id) && <button onClick={() => AñadirIntegrante(afectado.id)} className='btn m-4 btn-accent'>Añadir</button>}
+                                        {Integrantes.includes(afectado.id) && <button onClick={() => RetirarIntegrante(afectado.id)} className='btn m-4 btn-error'>Retirar</button>}
+
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="modal-action">
+                        <div className='flex gap-3'>
+                            <button onClick={() => GuardarAñadirIntegrantes()} className='btn btn-success'>Aceptar</button>
+                        </div>
+                    </div>
+                </div>
+            </dialog>
+
+
+            {/* Integrantes */}
+
+            <dialog id="AñadirAfectado" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg">Añadir afectado</h3>
+                    <p className="py-4">Nombre</p>
+
+                    <p className="py-4">Carrera</p>
+
+                    <p className="py-4">Correo</p>
+
+                    <p className="py-4">Telefono</p>
+
+                    <p className="py-4">Cargo</p>
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            {/* if there is a button in form, it will close the modal */}
+                            <button className="btn">Close</button>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+
+            {/* Bitacora */}
+
+
+
 
 
 
