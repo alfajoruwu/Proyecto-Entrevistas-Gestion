@@ -11,6 +11,7 @@ import Ejemplo from './Vistas/Ejemplo/Ejemplo';
 import Principal from './Vistas/Principal/Principal';
 import Casos from './Vistas/Casos/Casos';
 import EntrevistaPreliminar from './Vistas/EntrevistaPreliminar/EntrevistaPreliminar';
+import Estadisticas from './Vistas/Estadisticas/Estadisticas';
 function App() {
 
   return (
@@ -33,6 +34,9 @@ function App() {
             <Route path='/Casos/:id' element={<Casos />} />
 
             <Route path='/Entrevistas' element={<EntrevistaPreliminar />} />
+
+            {/* Ruta de estadísticas */}
+            <Route path='/estadisticas' element={<Estadisticas />} />
 
 
 
