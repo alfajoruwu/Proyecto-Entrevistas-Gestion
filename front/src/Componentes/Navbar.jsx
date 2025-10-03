@@ -31,7 +31,7 @@ const Navbar = ({ MenuLateral = true }) => {
             // Intentar hacer logout en el servidor
             const accessToken = localStorage.getItem('accessToken');
             if (accessToken) {
-                await apiClient.post('/usuarios/logout');
+                await apiClient.post('/api/usuarios/logout');
             }
         } catch (error) {
             console.log('Error al hacer logout en el servidor:', error.message);
@@ -49,6 +49,9 @@ const Navbar = ({ MenuLateral = true }) => {
             Navigate('/login')
         }
     }
+
+    const Irentrevistas = () => { Navigate('/Entrevistas') }
+    const IrPrincipal = () => { Navigate('/Principal') }
 
     const IrCrearBaseDatos = () => { Navigate('/CrearDB') }
     const IrCrearEjercicio = () => { Navigate('/CrearEjercicio') }
@@ -87,8 +90,9 @@ const Navbar = ({ MenuLateral = true }) => {
                                     <div class="divider"></div>
 
 
-                                    <li><a onClick={() => IrEjercicios()}>Casos</a></li>
-                                    <li><a onClick={() => IrEjercicios()}>Estadisticas</a></li>
+                                    <li><a onClick={() => IrPrincipal()}>Casos de convivencia</a></li>
+                                    <li><a onClick={() => Irentrevistas()}>Entrevistas preliminar</a></li>
+                                    <li><a onClick={() => IrEjercicios()}>Estadísticas</a></li>
 
 
 

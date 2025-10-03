@@ -1,52 +1,81 @@
+-- Tabla de usuarios administradores
 CREATE TABLE Usuarios (
-    ID SERIAL PRIMARY KEY,
+    id_usuario SERIAL PRIMARY KEY,
     nombre TEXT UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    rol VARCHAR(50) DEFAULT 'usuario',
-    Fecha_Registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    rol VARCHAR(50) DEFAULT 'administrador',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
-
-CREATE TABLE CASOS (
-    Creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ID SERIAL PRIMARY KEY,
-    Nombre TEXT,
-    Tipo TEXT,
-    Resumen TEXT
+-- Tabla de casos de convivencia
+CREATE TABLE Casos (
+    id_caso SERIAL PRIMARY KEY,
+    titulo TEXT NOT NULL,
+    descripcion TEXT,
+    fuente TEXT, -- texto libre para describir cómo llegó el caso
+    tipo_fuente VARCHAR(50), -- 'derivacion', 'denuncia_presencial', 'denuncia_online'
+    estado VARCHAR(50) DEFAULT 'Recepcionado', -- 'Recepcionado', 'En Proceso', 'Finalizado'
+    forma_finalizacion VARCHAR(50), -- 'Acuerdo', 'Derivacion', 'Frustrado'
+    comentarios_finalizacion TEXT, -- Comentarios adicionales al finalizar
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_finalizacion TIMESTAMP
 );
 
-
+-- Tabla de afectados (docentes, estudiantes, colaboradores)
 CREATE TABLE Afectados (
-    Creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ID SERIAL PRIMARY KEY,
-    Nombre TEXT,
-    Cargo TEXT,
-    Carrera TEXT,
-    Telefono TEXT,
-    Correo TEXT
+    id_afectado SERIAL PRIMARY KEY,
+    tipo VARCHAR(20) NOT NULL, -- 'Docente', 'Estudiante', 'Colaborador'
+    nombre TEXT NOT NULL,
+    correo VARCHAR(100),
+    telefono VARCHAR(20),
+    carrera TEXT, -- para estudiantes y docentes
+    cargo TEXT, -- para docentes
+    empresa_servicio TEXT, -- para colaboradores
+    unidad TEXT, -- para colaboradores
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Relación entre casos y afectados con su rol
+CREATE TABLE RolAfectadoCaso (
+    id SERIAL PRIMARY KEY,
+    id_caso INTEGER REFERENCES Casos(id_caso) ON DELETE CASCADE,
+    id_afectado INTEGER REFERENCES Afectados(id_afectado) ON DELETE CASCADE,
+    rol VARCHAR(20) NOT NULL, -- 'Denunciante', 'Denunciado', 'Testigo'
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+-- Tabla de entrevistas realizadas
 CREATE TABLE Entrevistas (
-    Creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ID SERIAL PRIMARY KEY,
+    id_entrevista SERIAL PRIMARY KEY,
+    id_caso INTEGER REFERENCES Casos(id_caso) ON DELETE CASCADE,
+    fecha_hora TIMESTAMP,
     lugar TEXT,
-    Asistentes int,
-    Fecha_Hora TEXT,
-    Estado TEXT,
-    FOREIGN KEY (Asistentes) REFERENCES Afectados(ID)
+    resumen TEXT, -- bitácora libre de lo realizado en la entrevista
+    resultado TEXT, -- nombre del documento generado (nullable)
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Relación entre entrevistas y afectados presentes
+CREATE TABLE EntrevistaAfectado (
+    id SERIAL PRIMARY KEY,
+    id_entrevista INTEGER REFERENCES Entrevistas(id_entrevista) ON DELETE CASCADE,
+    id_afectado INTEGER REFERENCES Afectados(id_afectado) ON DELETE CASCADE
+);
+
+-- Bitácora de acciones realizadas en cada caso
+CREATE TABLE AccionesBitacora (
+    id_accion SERIAL PRIMARY KEY,
+    id_caso INTEGER REFERENCES Casos(id_caso) ON DELETE CASCADE,
+    descripcion TEXT NOT NULL,
+    resultado TEXT, -- nombre del documento generado (nullable)
+    color VARCHAR(50) DEFAULT 'bg-primary', -- color para categorización visual
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_id INTEGER REFERENCES Usuarios(id_usuario)
 );
 
 
 
-
-CREATE TABLE IF NOT EXISTS Invitados (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    upgraded BOOLEAN DEFAULT FALSE
-);
 
 -- Tabla para control de tokens activos y blacklist
 CREATE TABLE IF NOT EXISTS Tokens (
@@ -58,8 +87,7 @@ CREATE TABLE IF NOT EXISTS Tokens (
     expires_at TIMESTAMP NULL, -- NULL para tokens sin expiración
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     revoked_at TIMESTAMP NULL,
-    FOREIGN KEY (user_id) REFERENCES Usuarios(ID) ON DELETE CASCADE,
-    FOREIGN KEY (invitado_id) REFERENCES Invitados(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
 );
 
 -- Habilitar extensión pg_cron (requiere permisos de superusuario)

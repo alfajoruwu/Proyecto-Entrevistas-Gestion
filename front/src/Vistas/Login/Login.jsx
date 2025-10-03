@@ -39,7 +39,7 @@ const Login = () => {
     // ----- Funciones ------
 
     const EnvioLogin = (Usuario, Contrasena) => {
-        apiClient.post('/usuarios/login', { email: Usuario, password: Contrasena })
+        apiClient.post('/api/usuarios/login', { email: Usuario, password: Contrasena })
 
             .then(response => {
                 console.log('Usuarios:', response.data);
@@ -61,7 +61,7 @@ const Login = () => {
     }
 
     const IngresarComoInvitado = () => {
-        apiClient.post('/usuarios/invitado')
+        apiClient.post('/api/usuarios/invitado')
             .then(response => {
                 console.log('Usuario invitado creado:', response.data);
                 localStorage.setItem('accessToken', response.data.accessToken);

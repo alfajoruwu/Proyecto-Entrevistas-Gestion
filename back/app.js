@@ -35,8 +35,17 @@ const ejemploProtegida = require('./rutas/Ejemplos/EjemploProtegida');
 //Usuarios
 const usuarios = require('./rutas/Usuario/Login');
 
+// Módulos del sistema de entrevistas
+const casos = require('./rutas/Casos/Casos');
+const afectados = require('./rutas/Afectados/Afectados');
+const entrevistas = require('./rutas/Entrevistas/Entrevistas');
+const acciones = require('./rutas/Acciones/Acciones');
 
-app.use('/usuarios', usuarios);
+app.use('/api/usuarios', usuarios);
+app.use('/api/casos', casos);
+app.use('/api/afectados', afectados);
+app.use('/api/entrevistas', entrevistas);
+app.use('/api/acciones', acciones);
 
 
 
@@ -57,7 +66,7 @@ async function createDefaultUser() {
 
     // Verificar si el usuario ya existe
     const existingUser = await pool.query(
-      'SELECT id FROM Usuarios WHERE nombre = $1 OR email = $2',
+      'SELECT id_usuario FROM Usuarios WHERE nombre = $1 OR email = $2',
       [defaultUser.nombre, defaultUser.email]
     );
 
@@ -120,10 +129,14 @@ setTimeout(async () => {
 
 app.get('/', (req, res) => {
   res.json({
-    message: 'API Backend - Sistema de Autenticación',
+    message: 'API Backend - Sistema de Gestión de Entrevistas',
     documentation: '/api-docs',
     endpoints: {
-      usuarios: '/usuarios',
+      usuarios: '/api/usuarios',
+      casos: '/api/casos',
+      afectados: '/api/afectados',
+      entrevistas: '/api/entrevistas',
+      acciones: '/api/acciones',
       documentacion: '/api-docs'
     }
   })

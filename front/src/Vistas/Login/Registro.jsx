@@ -64,7 +64,7 @@ const Registro = () => {
             datosRegistro.invitadoId = invitadoId;
         }
 
-        apiClient.post('/usuarios/register', datosRegistro)
+        apiClient.post('/api/usuarios/register', datosRegistro)
             .then(response => {
                 console.log('Usuario registrado:', response.data);
 
