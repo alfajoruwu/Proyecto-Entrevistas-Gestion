@@ -14,10 +14,11 @@ CREATE TABLE Casos (
     titulo TEXT NOT NULL,
     descripcion TEXT,
     fuente TEXT, -- texto libre para describir cómo llegó el caso
-    tipo_fuente VARCHAR(50), -- 'derivacion', 'denuncia_presencial', 'denuncia_online'
+    tipo_fuente VARCHAR(50), -- 'derivacion', 'denuncia_presencial', 'denuncia_online', 'entrevista_preliminar'
     estado VARCHAR(50) DEFAULT 'Recepcionado', -- 'Recepcionado', 'En Proceso', 'Finalizado'
     forma_finalizacion VARCHAR(50), -- 'Acuerdo', 'Derivacion', 'Frustrado'
     comentarios_finalizacion TEXT, -- Comentarios adicionales al finalizar
+    id_entrevista_preliminar INTEGER, -- referencia a entrevista preliminar de origen
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_finalizacion TIMESTAMP
 );
@@ -73,6 +74,27 @@ CREATE TABLE AccionesBitacora (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_id INTEGER REFERENCES Usuarios(id_usuario)
 );
+
+-- Tabla de entrevistas preliminares (antes de crear casos formales)
+CREATE TABLE EntrevistasPreliminar (
+    id_entrevista_preliminar SERIAL PRIMARY KEY,
+    persona_entrevistada TEXT NOT NULL, -- nombre de la persona entrevistada
+    tipo_persona VARCHAR(20), -- 'Docente', 'Estudiante', 'Colaborador', 'Externo'
+    contacto TEXT, -- correo o teléfono de contacto (opcional)
+    resumen_conversacion TEXT NOT NULL, -- resumen de lo conversado
+    evolucionado_a_caso BOOLEAN DEFAULT FALSE, -- si se convirtió en caso formal
+    id_caso_relacionado INTEGER REFERENCES Casos(id_caso) ON DELETE SET NULL, -- caso al que evolucionó
+    id_afectado_creado INTEGER REFERENCES Afectados(id_afectado) ON DELETE SET NULL, -- afectado creado automáticamente
+    fecha_entrevista TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_id INTEGER REFERENCES Usuarios(id_usuario),
+    notas_adicionales TEXT -- campo adicional para observaciones
+);
+
+-- Índices para mejorar consultas
+CREATE INDEX idx_entrevistas_preliminar_fecha ON EntrevistasPreliminar(fecha_entrevista);
+CREATE INDEX idx_entrevistas_preliminar_evolucionado ON EntrevistasPreliminar(evolucionado_a_caso);
+CREATE INDEX idx_entrevistas_preliminar_caso ON EntrevistasPreliminar(id_caso_relacionado);
+CREATE INDEX idx_entrevistas_preliminar_afectado ON EntrevistasPreliminar(id_afectado_creado);
 
 
 

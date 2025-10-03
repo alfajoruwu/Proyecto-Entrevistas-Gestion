@@ -40,12 +40,14 @@ const casos = require('./rutas/Casos/Casos');
 const afectados = require('./rutas/Afectados/Afectados');
 const entrevistas = require('./rutas/Entrevistas/Entrevistas');
 const acciones = require('./rutas/Acciones/Acciones');
+const entrevistasPreliminar = require('./rutas/EntrevistasPreliminar/EntrevistasPreliminar');
 
 app.use('/api/usuarios', usuarios);
 app.use('/api/casos', casos);
 app.use('/api/afectados', afectados);
 app.use('/api/entrevistas', entrevistas);
 app.use('/api/acciones', acciones);
+app.use('/api/entrevistas-preliminar', entrevistasPreliminar);
 
 
 
@@ -137,6 +139,7 @@ app.get('/', (req, res) => {
       afectados: '/api/afectados',
       entrevistas: '/api/entrevistas',
       acciones: '/api/acciones',
+      entrevistasPreliminar: '/api/entrevistas-preliminar',
       documentacion: '/api-docs'
     }
   })

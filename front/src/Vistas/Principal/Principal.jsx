@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { FaComments, FaEye, FaTimes } from 'react-icons/fa';
 
 const Principal = () => {
     const { mostrarToast } = useToast()
@@ -57,6 +58,9 @@ const Principal = () => {
     const [totalPaginas, setTotalPaginas] = useState(1)
     const [totalCasos, setTotalCasos] = useState(0)
     const casosPorPagina = 20 // Casos por página
+
+    // Estado para modal de entrevista preliminar
+    const [entrevistaPreliminarDetalle, setEntrevistaPreliminarDetalle] = useState(null)
 
     // Cargar casos al montar el componente
     useEffect(() => {
@@ -290,6 +294,11 @@ const Principal = () => {
         navigate(`/Casos/${id}`)
     }
 
+    const abrirDetalleEntrevistaPreliminar = (caso) => {
+        setEntrevistaPreliminarDetalle(caso)
+        document.getElementById('modal_entrevista_preliminar_principal').showModal()
+    }
+
     // Filtrar casos - removido porque se hace en el backend
     // const casosFiltrados = casos // Usar directamente los casos del backend
 
@@ -370,6 +379,7 @@ const Principal = () => {
                                     <option value="derivacion">Derivación</option>
                                     <option value="denuncia_presencial">Denuncia Presencial</option>
                                     <option value="denuncia_online">Denuncia Online/Correo</option>
+                                    <option value="entrevista_preliminar">Entrevista Preliminar</option>
                                 </select>
                             </div>
 
@@ -553,6 +563,31 @@ const Principal = () => {
                                             </div>
                                         )}
 
+                                        {/* Mostrar información de entrevista preliminar si existe */}
+                                        {caso.tipo_fuente === 'entrevista_preliminar' && caso.entrevista_persona && (
+                                            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mt-2">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <FaComments className="text-blue-600" />
+                                                        <span className="text-sm font-semibold text-blue-700">
+                                                            Originado desde entrevista con {caso.entrevista_persona}
+                                                        </span>
+                                                        {caso.entrevista_fecha && (
+                                                            <span className="text-blue-600 text-xs">
+                                                                • {new Date(caso.entrevista_fecha).toLocaleDateString('es-ES')}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => abrirDetalleEntrevistaPreliminar(caso)}
+                                                        className="btn btn-xs btn-outline btn-primary flex items-center gap-1"
+                                                    >
+                                                        <FaEye /> Ver
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {/* Mostrar participantes del caso */}
                                         {caso.afectados && caso.afectados.length > 0 && (
                                             <div>
@@ -562,9 +597,9 @@ const Principal = () => {
                                                         <span
                                                             key={index}
                                                             className={`badge badge-sm ${afectado.rol === 'Denunciante' ? 'badge-error' :
-                                                                    afectado.rol === 'Denunciado' ? 'badge-warning' :
-                                                                        afectado.rol === 'Testigo' ? 'badge-info' :
-                                                                            'badge-neutral'
+                                                                afectado.rol === 'Denunciado' ? 'badge-warning' :
+                                                                    afectado.rol === 'Testigo' ? 'badge-info' :
+                                                                        'badge-neutral'
                                                                 }`}
                                                             title={`${afectado.nombre} - ${afectado.rol}`}
                                                         >
@@ -781,6 +816,7 @@ const Principal = () => {
                                 <option value="derivacion">Derivación</option>
                                 <option value="denuncia_presencial">Denuncia Presencial</option>
                                 <option value="denuncia_online">Denuncia Online/Correo</option>
+                                <option value="entrevista_preliminar">Entrevista Preliminar</option>
                             </select>
                         </div>
 
@@ -864,6 +900,7 @@ const Principal = () => {
                                     <option value="derivacion">Derivación</option>
                                     <option value="denuncia_presencial">Denuncia Presencial</option>
                                     <option value="denuncia_online">Denuncia Online/Correo</option>
+                                    <option value="entrevista_preliminar">Entrevista Preliminar</option>
                                 </select>
                             </div>
 
@@ -966,6 +1003,63 @@ const Principal = () => {
                                     Finalizar Caso
                                 </button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+
+            {/* Modal para mostrar detalles de entrevista preliminar */}
+            <dialog id="modal_entrevista_preliminar_principal" className="modal">
+                <div className="modal-box max-w-2xl">
+                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                        <FaComments className="text-blue-600" />
+                        Detalles de Entrevista Preliminar
+                    </h3>
+
+                    {entrevistaPreliminarDetalle && (
+                        <div className='flex flex-col gap-4'>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-base-200 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-2 text-blue-700">Información de la Persona</h4>
+                                    <p><strong>Nombre:</strong> {entrevistaPreliminarDetalle.entrevista_persona}</p>
+                                </div>
+
+                                <div className="bg-base-200 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-2 text-blue-700">Información de la Entrevista</h4>
+                                    {entrevistaPreliminarDetalle.entrevista_fecha && (
+                                        <p><strong>Fecha:</strong> {new Date(entrevistaPreliminarDetalle.entrevista_fecha).toLocaleString('es-ES')}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {entrevistaPreliminarDetalle.entrevista_resumen && (
+                                <div className="bg-base-200 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-2 text-blue-700">Resumen de la Conversación</h4>
+                                    <p className="text-sm whitespace-pre-wrap">{entrevistaPreliminarDetalle.entrevista_resumen}</p>
+                                </div>
+                            )}
+
+                            {entrevistaPreliminarDetalle.entrevista_notas && (
+                                <div className="bg-base-200 p-4 rounded-lg">
+                                    <h4 className="font-semibold mb-2 text-blue-700">Notas Adicionales</h4>
+                                    <p className="text-sm whitespace-pre-wrap">{entrevistaPreliminarDetalle.entrevista_notas}</p>
+                                </div>
+                            )}
+
+                            <div className="bg-success/10 border border-success/20 p-4 rounded-lg">
+                                <h4 className="font-semibold mb-2 text-success">Estado de Evolución</h4>
+                                <p className="text-sm text-success">
+                                    ✅ Esta entrevista preliminar evolucionó exitosamente al caso: <strong>"{entrevistaPreliminarDetalle.titulo}"</strong>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <button className="btn btn-ghost">
+                                <FaTimes /> Cerrar
+                            </button>
                         </form>
                     </div>
                 </div>

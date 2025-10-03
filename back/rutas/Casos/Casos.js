@@ -12,6 +12,14 @@ router.post('/', authMiddleware, Verifica('administrador'), async (req, res) => 
             return res.status(400).json({ error: 'Título y tipo de fuente son requeridos' });
         }
 
+        // Validar tipos de fuente permitidos
+        const tiposValidos = ['derivacion', 'denuncia_presencial', 'denuncia_online', 'entrevista_preliminar'];
+        if (!tiposValidos.includes(tipo_fuente)) {
+            return res.status(400).json({
+                error: 'Tipo de fuente inválido. Debe ser: derivacion, denuncia_presencial, denuncia_online o entrevista_preliminar'
+            });
+        }
+
         const result = await pool.query(
             'INSERT INTO Casos (titulo, descripcion, fuente, tipo_fuente) VALUES ($1, $2, $3, $4) RETURNING *',
             [titulo, descripcion, fuente, tipo_fuente]
@@ -98,10 +106,13 @@ router.get('/', authMiddleware, Verifica('administrador'), async (req, res) => {
             params.push(fechaFinCompleta);
         }
 
-        // Consulta principal con afectados
+        // Consulta principal con afectados e información de entrevista preliminar
         let query = `
             SELECT 
                 c.*,
+                ep.persona_entrevistada as entrevista_persona,
+                ep.fecha_entrevista as entrevista_fecha,
+                ep.resumen_conversacion as entrevista_resumen,
                 COALESCE(
                     json_agg(
                         json_build_object(
@@ -116,10 +127,13 @@ router.get('/', authMiddleware, Verifica('administrador'), async (req, res) => {
             FROM Casos c
             LEFT JOIN RolAfectadoCaso rac ON c.id_caso = rac.id_caso
             LEFT JOIN Afectados a ON rac.id_afectado = a.id_afectado
+            LEFT JOIN EntrevistasPreliminar ep ON c.id_entrevista_preliminar = ep.id_entrevista_preliminar
             ${joins}
         `;
 
-        let countQuery = `SELECT COUNT(DISTINCT c.id_caso) FROM Casos c ${joins}`;
+        let countQuery = `SELECT COUNT(DISTINCT c.id_caso) FROM Casos c 
+                         LEFT JOIN EntrevistasPreliminar ep ON c.id_entrevista_preliminar = ep.id_entrevista_preliminar 
+                         ${joins}`;
 
         if (whereConditions.length > 0) {
             const whereClause = ' WHERE ' + whereConditions.join(' AND ');
@@ -127,9 +141,7 @@ router.get('/', authMiddleware, Verifica('administrador'), async (req, res) => {
             countQuery += whereClause;
         }
 
-        query += ' GROUP BY c.id_caso ORDER BY c.fecha_creacion DESC';
-
-        // Paginación con valores validados
+        query += ' GROUP BY c.id_caso, ep.persona_entrevistada, ep.fecha_entrevista, ep.resumen_conversacion ORDER BY c.fecha_creacion DESC';        // Paginación con valores validados
         const offset = (pageNum - 1) * limitNum;
         query += ` LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
         params.push(limitNum, offset);
@@ -161,8 +173,17 @@ router.get('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
     try {
         const { id } = req.params;
 
-        // Obtener información del caso
-        const casoResult = await pool.query('SELECT * FROM Casos WHERE id_caso = $1', [id]);
+        // Obtener información del caso con entrevista preliminar si existe
+        const casoResult = await pool.query(`
+            SELECT c.*, 
+                   ep.persona_entrevistada as entrevista_persona,
+                   ep.fecha_entrevista as entrevista_fecha,
+                   ep.resumen_conversacion as entrevista_resumen,
+                   ep.notas_adicionales as entrevista_notas
+            FROM Casos c
+            LEFT JOIN EntrevistasPreliminar ep ON c.id_entrevista_preliminar = ep.id_entrevista_preliminar
+            WHERE c.id_caso = $1
+        `, [id]);
 
         if (casoResult.rows.length === 0) {
             return res.status(404).json({ error: 'Caso no encontrado' });
@@ -228,6 +249,13 @@ router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
             params.push(fuente);
         }
         if (tipo_fuente) {
+            // Validar tipos de fuente permitidos
+            const tiposValidos = ['derivacion', 'denuncia_presencial', 'denuncia_online', 'entrevista_preliminar'];
+            if (!tiposValidos.includes(tipo_fuente)) {
+                return res.status(400).json({
+                    error: 'Tipo de fuente inválido. Debe ser: derivacion, denuncia_presencial, denuncia_online o entrevista_preliminar'
+                });
+            }
             updateFields.push(`tipo_fuente = $${++paramCount}`);
             params.push(tipo_fuente);
         }
