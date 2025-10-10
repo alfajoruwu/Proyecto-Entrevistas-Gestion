@@ -39,11 +39,7 @@ const BitacoraManager = ({ casoId }) => {
             // Mapear las acciones del backend al formato que necesitamos
             const accionesFormateadas = response.data.acciones.map(accion => ({
                 id: accion.id_accion,
-                titulo: accion.descripcion.length > 50
-                    ? accion.descripcion.substring(0, 50) + '...'
-                    : accion.descripcion,
                 descripcion: accion.descripcion,
-                resultado: accion.resultado || '',
                 fecha: new Date(accion.fecha).toISOString().split('T')[0],
                 hora: new Date(accion.fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
                 autor: accion.usuario_nombre || 'Usuario desconocido',
@@ -77,7 +73,6 @@ const BitacoraManager = ({ casoId }) => {
         try {
             const response = await apiClient.post(`/api/acciones/casos/${casoId}/acciones`, {
                 descripcion: `${nuevaEntrada.titulo}: ${nuevaEntrada.descripcion}`,
-                resultado: nuevaEntrada.resultado || null,
                 color: nuevaEntrada.color
             });
 
@@ -92,11 +87,22 @@ const BitacoraManager = ({ casoId }) => {
     };
 
     const editarEntrada = (entrada) => {
-        setNuevaEntrada({
-            titulo: entrada.titulo,
-            descripcion: entrada.descripcion,
-            color: entrada.color || 'bg-primary'
-        });
+        // Si la descripción tiene el formato "titulo: descripcion", separarlos
+        const match = entrada.descripcion.match(/^(.+?):\s*(.+)$/);
+        if (match) {
+            setNuevaEntrada({
+                titulo: match[1],
+                descripcion: match[2],
+                color: entrada.color || 'bg-primary'
+            });
+        } else {
+            // Si no tiene formato de titulo:descripcion, usar toda la descripción como titulo
+            setNuevaEntrada({
+                titulo: entrada.descripcion,
+                descripcion: '',
+                color: entrada.color || 'bg-primary'
+            });
+        }
         setEditandoEntrada(entrada);
         document.getElementById('modalNuevaEntrada').showModal();
     };
@@ -110,7 +116,6 @@ const BitacoraManager = ({ casoId }) => {
         try {
             await apiClient.put(`/api/acciones/${editandoEntrada.id}`, {
                 descripcion: `${nuevaEntrada.titulo}: ${nuevaEntrada.descripcion}`,
-                resultado: nuevaEntrada.resultado || null,
                 color: nuevaEntrada.color
             });
 
@@ -139,10 +144,8 @@ const BitacoraManager = ({ casoId }) => {
 
     // Filtrar bitácora según búsqueda
     const bitacoraFiltrada = bitacora.filter(entrada =>
-        entrada.titulo.toLowerCase().includes(busquedaBitacora.toLowerCase()) ||
         entrada.descripcion.toLowerCase().includes(busquedaBitacora.toLowerCase()) ||
-        entrada.autor.toLowerCase().includes(busquedaBitacora.toLowerCase()) ||
-        (entrada.resultado && entrada.resultado.toLowerCase().includes(busquedaBitacora.toLowerCase()))
+        entrada.autor.toLowerCase().includes(busquedaBitacora.toLowerCase())
     );
 
     useEffect(() => {
@@ -203,22 +206,9 @@ const BitacoraManager = ({ casoId }) => {
                             <div className="card-body">
                                 <div className="flex justify-between items-start">
                                     <div className="flex-1">
-                                        <div className="mb-3">
-                                            <div className={`${entrada.color} text-white rounded-lg px-4 py-2 text-lg font-semibold inline-block w-3/5`}>
-                                                {entrada.titulo}
-                                            </div>
-                                        </div>
-
-                                        <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                                        <div className={`${entrada.color} text-white rounded-lg px-4 py-2 text-sm font-medium mb-3 inline-block max-w-fit`}>
                                             {entrada.descripcion}
-                                        </p>
-
-                                        {entrada.resultado && (
-                                            <div className="bg-gray-100 rounded-lg p-2 mb-3">
-                                                <span className="text-xs font-medium text-gray-600">Resultado:</span>
-                                                <p className="text-sm text-gray-700 mt-1">{entrada.resultado}</p>
-                                            </div>
-                                        )}
+                                        </div>
 
                                         <div className="flex items-center gap-4 text-xs text-gray-500">
                                             <span className="flex items-center gap-1">
@@ -314,18 +304,6 @@ const BitacoraManager = ({ casoId }) => {
                                 placeholder="Describe los detalles de esta entrada de bitácora..."
                                 value={nuevaEntrada.descripcion}
                                 onChange={(e) => setNuevaEntrada(prev => ({ ...prev, descripcion: e.target.value }))}
-                            ></textarea>
-                        </div>
-
-                        <div>
-                            <label className="label">
-                                <span className="label-text font-medium">Resultado (opcional)</span>
-                            </label>
-                            <textarea
-                                className="textarea textarea-bordered w-full h-24"
-                                placeholder="Describe el resultado o conclusión de esta acción..."
-                                value={nuevaEntrada.resultado || ''}
-                                onChange={(e) => setNuevaEntrada(prev => ({ ...prev, resultado: e.target.value }))}
                             ></textarea>
                         </div>
                     </div>

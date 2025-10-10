@@ -29,6 +29,7 @@ function App() {
 
             <Route path="/Ejemplo" element={<Ejemplo />} />
             <Route path='/Principal' element={<Principal />} />
+            <Route path='/Inicio' element={<Principal />} />
 
             {/* Rutas de casos */}
             <Route path='/Casos/:id' element={<Casos />} />

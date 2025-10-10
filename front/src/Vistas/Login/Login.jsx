@@ -23,7 +23,7 @@ const Login = () => {
 
     const IrRegistro = () => { Navigate('/Registro') }
     const IrLogin = () => { Navigate('/Login') }
-    const Irprincipal = () => { Navigate('/Principal') }
+    const Irprincipal = () => { Navigate('/estadisticas') }
     // ----- Variables -------
 
     const [Usuario, SetUsuario] = useState("")

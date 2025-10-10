@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FaComments, FaEye, FaTimes } from 'react-icons/fa';
+import { FaComments, FaEye, FaTimes, FaCheckCircle, FaInfo } from 'react-icons/fa';
 
 const Principal = () => {
     const { mostrarToast } = useToast()
@@ -52,6 +52,10 @@ const Principal = () => {
     const [formaFinalizacion, setFormaFinalizacion] = useState('')
     const [comentariosFinalizacion, setComentariosFinalizacion] = useState('')
     const [fechaFinalizacion, setFechaFinalizacion] = useState(new Date())
+
+    // Modal de resolución
+    const [casoParaResolver, setCasoParaResolver] = useState(null)
+    const [resolucion, setResolucion] = useState('')
 
     // Paginación
     const [paginaActual, setPaginaActual] = useState(1)
@@ -266,6 +270,17 @@ const Principal = () => {
 
     const handleCambiarEstado = async (casoId, nuevoEstado) => {
         try {
+            // Si se quiere cambiar a resolución, abrir modal específico
+            if (nuevoEstado === 'Resolución') {
+                const caso = casos.find(c => c.id_caso === casoId)
+                if (caso && caso.estado !== 'Finalizado') {
+                    mostrarToast('El caso debe estar Finalizado antes de poder resolverlo', 'error')
+                    return
+                }
+                abrirResolverCaso(caso)
+                return
+            }
+
             await apiClient.put(`/api/casos/${casoId}/estado`, {
                 estado: nuevoEstado
             })
@@ -274,6 +289,34 @@ const Principal = () => {
         } catch (error) {
             console.error('Error cambiando estado:', error)
             mostrarToast(error.response?.data?.error || 'Error al cambiar estado', 'error')
+        }
+    }
+
+    const abrirResolverCaso = (caso) => {
+        setCasoParaResolver(caso)
+        setResolucion('')
+        document.getElementById('modal_resolver_caso').showModal()
+    }
+
+    const handleResolver = async () => {
+        try {
+            if (!casoParaResolver || !resolucion.trim()) {
+                mostrarToast('La resolución es requerida', 'error')
+                return
+            }
+
+            await apiClient.put(`/api/casos/${casoParaResolver.id_caso}/resolver`, {
+                resolucion: resolucion.trim()
+            })
+
+            mostrarToast('Caso resuelto exitosamente', 'success')
+            cargarCasos()
+            setCasoParaResolver(null)
+            setResolucion('')
+            document.getElementById('modal_resolver_caso').close()
+        } catch (error) {
+            console.error('Error resolviendo caso:', error)
+            mostrarToast(error.response?.data?.error || 'Error al resolver caso', 'error')
         }
     }
 
@@ -307,6 +350,7 @@ const Principal = () => {
             case 'Recepcionado': return 'badge-info'
             case 'En Proceso': return 'badge-warning'
             case 'Finalizado': return 'badge-error'
+            case 'Resolución': return 'badge-success'
             default: return 'badge-neutral'
         }
     }
@@ -365,6 +409,7 @@ const Principal = () => {
                                     <option value="Recepcionado">Recepcionado</option>
                                     <option value="En Proceso">En Proceso</option>
                                     <option value="Finalizado">Finalizado</option>
+                                    <option value="Resolución">Resolución</option>
                                 </select>
                             </div>
 
@@ -637,36 +682,93 @@ const Principal = () => {
                                                 )}
                                             </div>
                                         )}
+
+                                        {/* Información de resolución */}
+                                        {caso.estado === 'Resolución' && (caso.resolucion || caso.fecha_resolucion) && (
+                                            <div className="bg-success/10 border border-success/20 p-3 rounded-lg mb-2">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <FaCheckCircle className="text-success" />
+                                                    <span className="font-semibold text-success">Caso Resuelto</span>
+                                                </div>
+                                                {caso.fecha_resolucion && (
+                                                    <div>
+                                                        <span className="font-semibold">📅 Resuelto el: </span>
+                                                        {new Date(caso.fecha_resolucion).toLocaleDateString('es-ES', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </div>
+                                                )}
+                                                {caso.resolucion && (
+                                                    <div>
+                                                        <span className="text-sm font-semibold">Descripción de la resolución: </span>
+                                                        <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{caso.resolucion}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="card-actions justify-end mt-4">
-                                        {caso.estado !== 'Finalizado' && (
+                                        {/* Botones de progresión/regresión de estado */}
+                                        {caso.estado === 'Recepcionado' && (
+                                            <button
+                                                onClick={() => handleCambiarEstado(caso.id_caso, 'En Proceso')}
+                                                className="btn btn-sm btn-warning"
+                                            >
+                                                Poner en Proceso
+                                            </button>
+                                        )}
+
+                                        {caso.estado === 'En Proceso' && (
                                             <>
-                                                {caso.estado === 'Recepcionado' && (
-                                                    <button
-                                                        onClick={() => handleCambiarEstado(caso.id_caso, 'En Proceso')}
-                                                        className="btn btn-sm btn-warning"
-                                                    >
-                                                        Poner en Proceso
-                                                    </button>
-                                                )}
-
-                                                {caso.estado === 'En Proceso' && (
-                                                    <button
-                                                        onClick={() => handleCambiarEstado(caso.id_caso, 'Recepcionado')}
-                                                        className="btn btn-sm btn-info"
-                                                    >
-                                                        Volver a Recepcionado
-                                                    </button>
-                                                )}
-
                                                 <button
-                                                    onClick={() => abrirFinalizarCaso(caso)}
-                                                    className="btn btn-sm btn-error"
+                                                    onClick={() => handleCambiarEstado(caso.id_caso, 'Recepcionado')}
+                                                    className="btn btn-sm btn-info"
                                                 >
-                                                    Finalizar
+                                                    Volver a Recepcionado
                                                 </button>
                                             </>
+                                        )}
+
+                                        {caso.estado === 'Resolución' && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleCambiarEstado(caso.id_caso, 'En Proceso')}
+                                                    className="btn btn-sm btn-warning"
+                                                >
+                                                    Volver a En Proceso
+                                                </button>
+                                            </>
+                                        )}
+
+                                        {caso.estado === 'Finalizado' && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleCambiarEstado(caso.id_caso, 'En Proceso')}
+                                                    className="btn btn-sm btn-warning"
+                                                >
+                                                    Reabrir caso
+                                                </button>
+                                                <button
+                                                    onClick={() => handleCambiarEstado(caso.id_caso, 'Resolución')}
+                                                    className="btn btn-sm btn-success"
+                                                >
+                                                    Cambiar a Resolución
+                                                </button>
+                                            </>
+                                        )}
+
+                                        {caso.estado !== 'Finalizado' && caso.estado !== 'Resolución' && (
+                                            <button
+                                                onClick={() => abrirFinalizarCaso(caso)}
+                                                className="btn btn-sm btn-error"
+                                            >
+                                                Finalizar
+                                            </button>
                                         )}
 
                                         <button
@@ -1060,6 +1162,49 @@ const Principal = () => {
                             <button className="btn btn-ghost">
                                 <FaTimes /> Cerrar
                             </button>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+
+            {/* Modal para resolver caso */}
+            <dialog id="modal_resolver_caso" className="modal">
+                <div className="modal-box">
+                    <h3 className="font-bold text-lg mb-4">Resolver Caso</h3>
+
+                    {casoParaResolver && (
+                        <div className='flex flex-col gap-4'>
+                            <div className="bg-base-200 p-3 rounded-lg">
+                                <p className="font-semibold">{casoParaResolver.titulo}</p>
+                                <p className="text-sm opacity-70">Estado actual: {casoParaResolver.estado}</p>
+                            </div>
+
+                            <div>
+                                <label className='label'>Descripción de la resolución *</label>
+                                <textarea
+                                    className='textarea textarea-bordered w-full'
+                                    placeholder='Describe detalladamente cómo se resolvió el caso...'
+                                    value={resolucion}
+                                    onChange={(e) => setResolucion(e.target.value)}
+                                    rows={4}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="modal-action">
+                        <form method="dialog">
+                            <div className='flex gap-2'>
+                                <button className="btn btn-ghost">Cancelar</button>
+                                <button
+                                    type="button"
+                                    className="btn btn-success"
+                                    onClick={handleResolver}
+                                    disabled={!resolucion.trim()}
+                                >
+                                    Resolver Caso
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

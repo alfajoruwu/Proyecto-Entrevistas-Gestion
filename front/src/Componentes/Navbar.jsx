@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react'
 
-import { FaUserAlt } from "react-icons/fa";
+import { FaUserAlt, FaUsers } from "react-icons/fa";
 import { EstadoGlobalContexto } from '../AuxS/EstadoGlobal'
 import TemaChanger from './TemaChanger';
 
@@ -83,16 +83,19 @@ const Navbar = ({ MenuLateral = true }) => {
                                     <li><a>  <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                                         <div className="drawer-content">
                                             <label htmlFor="my-drawer" className="drawer-button">
-                                                <a class="pl-2 text-xl font-bold ">Entrevistas</a>
+                                                <a class="pl-2 text-xl font-bold flex items-center gap-2">
+                                                    <FaUsers className="text-primary" />
+                                                    Comisionaduría de ética y convivencia universitaria
+                                                </a>
                                             </label>
                                         </div></a></li>
 
                                     <div class="divider"></div>
 
 
+                                    <li><a onClick={() => IrEjercicios()}>Estadísticas</a></li>
                                     <li><a onClick={() => IrPrincipal()}>Casos de convivencia</a></li>
                                     <li><a onClick={() => Irentrevistas()}>Entrevistas preliminar</a></li>
-                                    <li><a onClick={() => IrEjercicios()}>Estadísticas</a></li>
 
 
 
@@ -112,7 +115,10 @@ const Navbar = ({ MenuLateral = true }) => {
                 </div>
 
                 <div class="flex-1">
-                    <a class="pl-2 text-xl font-bold text-primary-content">Entrevistas</a>
+                    <a class="pl-2 text-xl font-bold text-primary-content flex items-center gap-2">
+                        <FaUsers className="text-primary-content" />
+                        Comisionaduría de ética y convivencia universitaria
+                    </a>
                 </div>
 
                 {Nombre != '' &&

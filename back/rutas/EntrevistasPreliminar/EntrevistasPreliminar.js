@@ -16,7 +16,7 @@ router.post('/', authMiddleware, Verifica('administrador'), async (req, res) => 
             correo,
             telefono,
             carrera,
-            cargo,
+            estamento,
             empresa_servicio,
             unidad,
             resumen_conversacion,
@@ -30,10 +30,10 @@ router.post('/', authMiddleware, Verifica('administrador'), async (req, res) => 
             });
         }
 
-        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador'];
+        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador', 'Funcionario', 'Administrativo'];
         if (!tipo_persona || !tiposValidos.includes(tipo_persona)) {
             return res.status(400).json({
-                error: 'Tipo de persona es requerido y debe ser: Docente, Estudiante o Colaborador'
+                error: 'Tipo de persona es requerido y debe ser: Docente, Estudiante, Colaborador, Funcionario o Administrativo'
             });
         }
 
@@ -55,10 +55,10 @@ router.post('/', authMiddleware, Verifica('administrador'), async (req, res) => 
         // Si no existe un afectado con ese correo, crear uno nuevo
         if (!afectadoExistente) {
             const afectadoResult = await client.query(`
-                INSERT INTO Afectados (tipo, nombre, correo, telefono, carrera, cargo, empresa_servicio, unidad)
+                INSERT INTO Afectados (tipo, nombre, correo, telefono, carrera, estamento, empresa_servicio, unidad)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id_afectado
-            `, [tipo_persona, persona_entrevistada, correo, telefono, carrera, cargo, empresa_servicio, unidad]);
+            `, [tipo_persona, persona_entrevistada, correo, telefono, carrera, estamento, empresa_servicio, unidad]);
 
             id_afectado_creado = afectadoResult.rows[0].id_afectado;
         } else {
@@ -266,7 +266,7 @@ router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
             correo,
             telefono,
             carrera,
-            cargo,
+            estamento,
             empresa_servicio,
             unidad,
             resumen_conversacion,
@@ -280,10 +280,10 @@ router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
             });
         }
 
-        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador'];
+        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador', 'Funcionario', 'Administrativo'];
         if (!tipo_persona || !tiposValidos.includes(tipo_persona)) {
             return res.status(400).json({
-                error: 'Tipo de persona es requerido y debe ser: Docente, Estudiante o Colaborador'
+                error: 'Tipo de persona es requerido y debe ser: Docente, Estudiante, Colaborador, Funcionario o Administrativo'
             });
         }
 
@@ -311,9 +311,9 @@ router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
             await client.query(`
                 UPDATE Afectados 
                 SET tipo = $1, nombre = $2, correo = $3, telefono = $4, 
-                    carrera = $5, cargo = $6, empresa_servicio = $7, unidad = $8
+                    carrera = $5, estamento = $6, empresa_servicio = $7, unidad = $8
                 WHERE id_afectado = $9
-            `, [tipo_persona, persona_entrevistada, correo, telefono, carrera, cargo, empresa_servicio, unidad, id_afectado_creado]);
+            `, [tipo_persona, persona_entrevistada, correo, telefono, carrera, estamento, empresa_servicio, unidad, id_afectado_creado]);
         }
 
         const fechaFinal = fecha_entrevista ? new Date(fecha_entrevista) : null;

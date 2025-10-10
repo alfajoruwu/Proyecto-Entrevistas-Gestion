@@ -15,25 +15,28 @@ CREATE TABLE Casos (
     descripcion TEXT,
     fuente TEXT, -- texto libre para describir cómo llegó el caso
     tipo_fuente VARCHAR(50), -- 'derivacion', 'denuncia_presencial', 'denuncia_online', 'entrevista_preliminar'
-    estado VARCHAR(50) DEFAULT 'Recepcionado', -- 'Recepcionado', 'En Proceso', 'Finalizado'
+    estado VARCHAR(50) DEFAULT 'Recepcionado', -- 'Recepcionado', 'En Proceso', 'Finalizado', 'Resolucion'
     forma_finalizacion VARCHAR(50), -- 'Acuerdo', 'Derivacion', 'Frustrado'
     comentarios_finalizacion TEXT, -- Comentarios adicionales al finalizar
+    resolucion TEXT, -- Descripción de la resolución del caso
+    comentarios_resolucion TEXT, -- Comentarios adicionales para la resolución
+    fecha_resolucion TIMESTAMP, -- Fecha cuando se resolvió el caso
     id_entrevista_preliminar INTEGER, -- referencia a entrevista preliminar de origen
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_finalizacion TIMESTAMP
 );
 
--- Tabla de afectados (docentes, estudiantes, colaboradores)
+-- Tabla de afectados (docentes, estudiantes, colaboradores, funcionarios, administrativos)
 CREATE TABLE Afectados (
     id_afectado SERIAL PRIMARY KEY,
-    tipo VARCHAR(20) NOT NULL, -- 'Docente', 'Estudiante', 'Colaborador'
+    tipo VARCHAR(20) NOT NULL, -- 'Docente', 'Estudiante', 'Colaborador', 'Funcionario', 'Administrativo'
     nombre TEXT NOT NULL,
     correo VARCHAR(100),
     telefono VARCHAR(20),
     carrera TEXT, -- para estudiantes y docentes
-    cargo TEXT, -- para docentes
+    estamento TEXT, -- reemplaza cargo - para docentes, funcionarios, administrativos
     empresa_servicio TEXT, -- para colaboradores
-    unidad TEXT, -- para colaboradores
+    unidad TEXT, -- para colaboradores, funcionarios, administrativos
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -42,7 +45,7 @@ CREATE TABLE RolAfectadoCaso (
     id SERIAL PRIMARY KEY,
     id_caso INTEGER REFERENCES Casos(id_caso) ON DELETE CASCADE,
     id_afectado INTEGER REFERENCES Afectados(id_afectado) ON DELETE CASCADE,
-    rol VARCHAR(20) NOT NULL, -- 'Denunciante', 'Denunciado', 'Testigo'
+    rol VARCHAR(20) NOT NULL, -- 'Denunciante', 'Denunciado', 'Testigo', 'Informante'
     fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -53,7 +56,6 @@ CREATE TABLE Entrevistas (
     fecha_hora TIMESTAMP,
     lugar TEXT,
     resumen TEXT, -- bitácora libre de lo realizado en la entrevista
-    resultado TEXT, -- nombre del documento generado (nullable)
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -69,7 +71,6 @@ CREATE TABLE AccionesBitacora (
     id_accion SERIAL PRIMARY KEY,
     id_caso INTEGER REFERENCES Casos(id_caso) ON DELETE CASCADE,
     descripcion TEXT NOT NULL,
-    resultado TEXT, -- nombre del documento generado (nullable)
     color VARCHAR(50) DEFAULT 'bg-primary', -- color para categorización visual
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_id INTEGER REFERENCES Usuarios(id_usuario)
@@ -79,7 +80,7 @@ CREATE TABLE AccionesBitacora (
 CREATE TABLE EntrevistasPreliminar (
     id_entrevista_preliminar SERIAL PRIMARY KEY,
     persona_entrevistada TEXT NOT NULL, -- nombre de la persona entrevistada
-    tipo_persona VARCHAR(20), -- 'Docente', 'Estudiante', 'Colaborador', 'Externo'
+    tipo_persona VARCHAR(20), -- 'Docente', 'Estudiante', 'Colaborador', 'Funcionario', 'Administrativo'
     contacto TEXT, -- correo o teléfono de contacto (opcional)
     resumen_conversacion TEXT NOT NULL, -- resumen de lo conversado
     evolucionado_a_caso BOOLEAN DEFAULT FALSE, -- si se convirtió en caso formal

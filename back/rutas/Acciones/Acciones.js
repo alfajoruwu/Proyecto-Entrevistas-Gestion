@@ -7,7 +7,7 @@ const { authMiddleware, Verifica } = require('../../middleware/TipoUsuario');
 router.post('/casos/:casoId/acciones', authMiddleware, Verifica('administrador'), async (req, res) => {
     try {
         const { casoId } = req.params;
-        const { descripcion, resultado, color } = req.body;
+        const { descripcion, color } = req.body;
 
         if (!descripcion) {
             return res.status(400).json({ error: 'Descripción es requerida' });
@@ -20,10 +20,10 @@ router.post('/casos/:casoId/acciones', authMiddleware, Verifica('administrador')
         }
 
         const result = await pool.query(`
-      INSERT INTO AccionesBitacora (id_caso, descripcion, resultado, color, usuario_id)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO AccionesBitacora (id_caso, descripcion, color, usuario_id)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
-    `, [casoId, descripcion, resultado, color || 'bg-primary', req.user.id]);
+    `, [casoId, descripcion, color || 'bg-primary', req.user.id]);
 
         res.status(201).json({
             message: 'Acción registrada exitosamente',
@@ -110,21 +110,20 @@ router.get('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
     }
 });
 
-// Actualizar acción (principalmente para agregar o modificar documento generado)
+// Actualizar acción (principalmente para agregar o modificar información)
 router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { descripcion, resultado, color } = req.body;
+        const { descripcion, color } = req.body;
 
         const result = await pool.query(`
       UPDATE AccionesBitacora 
       SET 
         descripcion = COALESCE($1, descripcion),
-        resultado = COALESCE($2, resultado),
-        color = COALESCE($3, color)
-      WHERE id_accion = $4
+        color = COALESCE($2, color)
+      WHERE id_accion = $3
       RETURNING *
-    `, [descripcion, resultado, color, id]);
+    `, [descripcion, color, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Acción no encontrada' });
@@ -179,7 +178,6 @@ router.get('/casos/:casoId/timeline', authMiddleware, Verifica('administrador'),
         'accion' as tipo,
         ab.id_accion as id,
         ab.descripcion,
-        ab.resultado,
         ab.fecha,
         u.nombre as usuario_nombre,
         NULL as detalles_extra
@@ -193,7 +191,6 @@ router.get('/casos/:casoId/timeline', authMiddleware, Verifica('administrador'),
         'entrevista' as tipo,
         e.id_entrevista as id,
         CONCAT('Entrevista programada: ', e.lugar) as descripcion,
-        e.resultado,
         COALESCE(e.fecha_hora, e.fecha_creacion) as fecha,
         NULL as usuario_nombre,
         json_build_object('lugar', e.lugar, 'fecha_hora', e.fecha_hora) as detalles_extra
@@ -206,7 +203,6 @@ router.get('/casos/:casoId/timeline', authMiddleware, Verifica('administrador'),
         'cambio_estado' as tipo,
         NULL as id,
         CONCAT('Caso creado con estado: ', c.estado) as descripcion,
-        NULL as resultado,
         c.fecha_creacion as fecha,
         NULL as usuario_nombre,
         json_build_object('estado', c.estado) as detalles_extra

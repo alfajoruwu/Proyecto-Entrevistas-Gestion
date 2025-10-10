@@ -171,18 +171,17 @@ router.get('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
 router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { fecha_hora, lugar, resumen, resultado } = req.body;
+        const { fecha_hora, lugar, resumen } = req.body;
 
         const result = await pool.query(`
       UPDATE Entrevistas 
       SET 
         fecha_hora = COALESCE($1, fecha_hora),
         lugar = COALESCE($2, lugar),
-        resumen = COALESCE($3, resumen),
-        resultado = COALESCE($4, resultado)
-      WHERE id_entrevista = $5
+        resumen = COALESCE($3, resumen)
+      WHERE id_entrevista = $4
       RETURNING *
-    `, [fecha_hora, lugar, resumen, resultado, id]);
+    `, [fecha_hora, lugar, resumen, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Entrevista no encontrada' });

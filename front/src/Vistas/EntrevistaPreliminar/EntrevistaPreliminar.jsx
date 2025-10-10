@@ -49,7 +49,7 @@ const EntrevistaPreliminar = () => {
         correo: '',
         telefono: '',
         carrera: '',
-        cargo: '',
+        estamento: '',
         empresa_servicio: '',
         unidad: '',
         resumen_conversacion: '',
@@ -158,7 +158,7 @@ const EntrevistaPreliminar = () => {
                 correo: '',
                 telefono: '',
                 carrera: '',
-                cargo: '',
+                estamento: '',
                 empresa_servicio: '',
                 unidad: '',
                 resumen_conversacion: '',
@@ -185,7 +185,7 @@ const EntrevistaPreliminar = () => {
                 correo: entrevistaEditando.correo,
                 telefono: entrevistaEditando.telefono,
                 carrera: entrevistaEditando.carrera,
-                cargo: entrevistaEditando.cargo,
+                estamento: entrevistaEditando.estamento,
                 empresa_servicio: entrevistaEditando.empresa_servicio,
                 unidad: entrevistaEditando.unidad,
                 resumen_conversacion: entrevistaEditando.resumen_conversacion,
@@ -290,6 +290,8 @@ const EntrevistaPreliminar = () => {
             case 'Estudiante': return <FaGraduationCap className="text-blue-500" />
             case 'Docente': return <FaUserTie className="text-green-500" />
             case 'Colaborador': return <FaBuilding className="text-purple-500" />
+            case 'Funcionario': return <FaUser className="text-orange-500" />
+            case 'Administrativo': return <FaUser className="text-red-500" />
             case 'Externo': return <FaUser className="text-gray-500" />
             default: return <FaUser className="text-gray-400" />
         }
@@ -300,6 +302,8 @@ const EntrevistaPreliminar = () => {
             case 'Estudiante': return 'badge-info'
             case 'Docente': return 'badge-success'
             case 'Colaborador': return 'badge-warning'
+            case 'Funcionario': return 'badge-primary'
+            case 'Administrativo': return 'badge-secondary'
             case 'Externo': return 'badge-neutral'
             default: return 'badge-ghost'
         }
@@ -325,7 +329,7 @@ const EntrevistaPreliminar = () => {
                                 correo: '',
                                 telefono: '',
                                 carrera: '',
-                                cargo: '',
+                                estamento: '',
                                 empresa_servicio: '',
                                 unidad: '',
                                 resumen_conversacion: '',
@@ -418,6 +422,8 @@ const EntrevistaPreliminar = () => {
                                     <option value="Estudiante">Estudiante</option>
                                     <option value="Docente">Docente</option>
                                     <option value="Colaborador">Colaborador</option>
+                                    <option value="Funcionario">Funcionario</option>
+                                    <option value="Administrativo">Administrativo</option>
                                     <option value="Externo">Externo</option>
                                 </select>
                             </div>
@@ -699,6 +705,8 @@ const EntrevistaPreliminar = () => {
                                     <option value="Estudiante">Estudiante</option>
                                     <option value="Docente">Docente</option>
                                     <option value="Colaborador">Colaborador</option>
+                                    <option value="Funcionario">Funcionario</option>
+                                    <option value="Administrativo">Administrativo</option>
                                 </select>
                             </div>
 
@@ -740,13 +748,13 @@ const EntrevistaPreliminar = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className='label'>Cargo</label>
+                                <label className='label'>Estamento</label>
                                 <input
                                     type="text"
                                     className='input input-bordered w-full'
-                                    placeholder='Cargo o posición'
-                                    value={nuevaEntrevista.cargo}
-                                    onChange={(e) => setNuevaEntrevista({ ...nuevaEntrevista, cargo: e.target.value })}
+                                    placeholder='Estamento o categoría'
+                                    value={nuevaEntrevista.estamento}
+                                    onChange={(e) => setNuevaEntrevista({ ...nuevaEntrevista, estamento: e.target.value })}
                                 />
                             </div>
 
@@ -862,6 +870,8 @@ const EntrevistaPreliminar = () => {
                                         <option value="Estudiante">Estudiante</option>
                                         <option value="Docente">Docente</option>
                                         <option value="Colaborador">Colaborador</option>
+                                        <option value="Funcionario">Funcionario</option>
+                                        <option value="Administrativo">Administrativo</option>
                                     </select>
                                 </div>
 
@@ -903,13 +913,13 @@ const EntrevistaPreliminar = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className='label'>Cargo</label>
+                                    <label className='label'>Estamento</label>
                                     <input
                                         type="text"
                                         className='input input-bordered w-full'
-                                        placeholder='Cargo o posición'
-                                        value={entrevistaEditando.cargo || ''}
-                                        onChange={(e) => setEntrevistaEditando({ ...entrevistaEditando, cargo: e.target.value })}
+                                        placeholder='Estamento o categoría'
+                                        value={entrevistaEditando.estamento || ''}
+                                        onChange={(e) => setEntrevistaEditando({ ...entrevistaEditando, estamento: e.target.value })}
                                     />
                                 </div>
 

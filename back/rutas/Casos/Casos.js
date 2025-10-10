@@ -295,30 +295,48 @@ router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
     }
 });
 
-// Cambiar estado del caso
+// Cambiar estado del caso (incluyendo regresión)
 router.put('/:id/estado', authMiddleware, Verifica('administrador'), async (req, res) => {
     try {
         const { id } = req.params;
         const { estado } = req.body;
 
-        const estadosValidos = ['Recepcionado', 'En Proceso', 'Finalizado'];
+        const estadosValidos = ['Recepcionado', 'En Proceso', 'Finalizado', 'Resolución'];
 
         if (!estado || !estadosValidos.includes(estado)) {
             return res.status(400).json({
-                error: 'Estado inválido. Debe ser: Recepcionado, En Proceso o Finalizado'
+                error: 'Estado inválido. Debe ser: Recepcionado, En Proceso, Finalizado o Resolución'
             });
         }
 
-        const result = await pool.query(`
-      UPDATE Casos 
-      SET estado = $1
-      WHERE id_caso = $2
-      RETURNING *
-    `, [estado, id]);
+        // Obtener el estado actual del caso
+        const casoActual = await pool.query('SELECT estado FROM Casos WHERE id_caso = $1', [id]);
 
-        if (result.rows.length === 0) {
+        if (casoActual.rows.length === 0) {
             return res.status(404).json({ error: 'Caso no encontrado' });
         }
+
+        const estadoActual = casoActual.rows[0].estado;
+
+        // Validar transición de estado: solo se puede ir a Resolución desde Finalizado
+        if (estado === 'Resolución' && estadoActual !== 'Finalizado') {
+            return res.status(400).json({
+                error: 'No se puede cambiar a Resolución. El caso debe estar Finalizado primero.',
+                flujo: 'Recepción → En Proceso → Finalizado → Resolución'
+            });
+        }
+
+        // Si se regresa de Finalizado, limpiar campos de finalización
+        let query = 'UPDATE Casos SET estado = $1';
+        let params = [estado, id];
+
+        if (estado !== 'Finalizado' && estado !== 'Resolución') {
+            query += ', forma_finalizacion = NULL, fecha_finalizacion = NULL, comentarios_finalizacion = NULL';
+        }
+
+        query += ' WHERE id_caso = $2 RETURNING *';
+
+        const result = await pool.query(query, params);
 
         // Registrar acción en bitácora
         await pool.query(`
@@ -381,6 +399,61 @@ router.put('/:id/finalizar', authMiddleware, Verifica('administrador'), async (r
         });
     } catch (error) {
         console.error('Error finalizando caso:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Cambiar caso a resolución (solo desde estado Finalizado)
+router.put('/:id/resolver', authMiddleware, Verifica('administrador'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { resolucion } = req.body;
+
+        if (!resolucion) {
+            return res.status(400).json({
+                error: 'La resolución es requerida'
+            });
+        }
+
+        // Verificar que el caso existe y está finalizado
+        const casoActual = await pool.query('SELECT * FROM Casos WHERE id_caso = $1', [id]);
+
+        if (casoActual.rows.length === 0) {
+            return res.status(404).json({ error: 'Caso no encontrado' });
+        }
+
+        if (casoActual.rows[0].estado !== 'Finalizado') {
+            return res.status(400).json({
+                error: 'Solo se puede cambiar a Resolución un caso que esté Finalizado',
+                estadoActual: casoActual.rows[0].estado,
+                flujo: 'Recepción → En Proceso → Finalizado → Resolución'
+            });
+        }
+
+        // Actualizar el caso con la resolución
+        const result = await pool.query(`
+            UPDATE Casos 
+            SET estado = 'Resolución',
+                resolucion = $1,
+                fecha_resolucion = NOW()
+            WHERE id_caso = $2
+            RETURNING *
+        `, [resolucion, id]);
+
+        // Registrar acción en bitácora
+        const descripcionAccion = `Caso resuelto. Resolución: ${resolucion}`;
+
+        await pool.query(`
+            INSERT INTO AccionesBitacora (id_caso, descripcion, usuario_id)
+            VALUES ($1, $2, $3)
+        `, [id, descripcionAccion, req.user.id]);
+
+        res.json({
+            message: 'Caso cambiado a resolución exitosamente',
+            caso: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error cambiando caso a resolución:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });

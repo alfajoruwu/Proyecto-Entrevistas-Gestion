@@ -39,6 +39,7 @@ router.get('/general', authMiddleware, Verifica('administrador'), async (req, re
                 COUNT(CASE WHEN estado = 'Recepcionado' THEN 1 END) as casos_recepcionados,
                 COUNT(CASE WHEN estado = 'En Proceso' THEN 1 END) as casos_en_proceso,
                 COUNT(CASE WHEN estado = 'Finalizado' THEN 1 END) as casos_finalizados,
+                COUNT(CASE WHEN estado = 'Resolución' THEN 1 END) as casos_en_resolucion,
                 COUNT(CASE WHEN EXTRACT(MONTH FROM fecha_creacion) = EXTRACT(MONTH FROM CURRENT_DATE) 
                            AND EXTRACT(YEAR FROM fecha_creacion) = EXTRACT(YEAR FROM CURRENT_DATE) THEN 1 END) as casos_mes_actual,
                 ROUND(AVG(CASE WHEN fecha_finalizacion IS NOT NULL 

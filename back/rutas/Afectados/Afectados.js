@@ -8,17 +8,17 @@ router.post('/', authMiddleware, Verifica('administrador'), async (req, res) => 
     try {
         const {
             tipo, nombre, correo, telefono,
-            carrera, cargo, empresa_servicio, unidad
+            carrera, estamento, empresa_servicio, unidad
         } = req.body;
 
         if (!tipo || !nombre) {
             return res.status(400).json({ error: 'Tipo y nombre son requeridos' });
         }
 
-        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador'];
+        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador', 'Funcionario', 'Administrativo'];
         if (!tiposValidos.includes(tipo)) {
             return res.status(400).json({
-                error: 'Tipo inválido. Debe ser: Docente, Estudiante o Colaborador'
+                error: 'Tipo inválido. Debe ser: Docente, Estudiante, Colaborador, Funcionario o Administrativo'
             });
         }
 
@@ -37,10 +37,10 @@ router.post('/', authMiddleware, Verifica('administrador'), async (req, res) => 
         }
 
         const result = await pool.query(`
-      INSERT INTO Afectados (tipo, nombre, correo, telefono, carrera, cargo, empresa_servicio, unidad)
+      INSERT INTO Afectados (tipo, nombre, correo, telefono, carrera, estamento, empresa_servicio, unidad)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
-    `, [tipo, nombre, correo, telefono, carrera, cargo, empresa_servicio, unidad]);
+    `, [tipo, nombre, correo, telefono, carrera, estamento, empresa_servicio, unidad]);
 
         res.status(201).json({
             message: 'Afectado creado exitosamente',
@@ -131,14 +131,14 @@ router.get('/buscar/autocompletar', authMiddleware, Verifica('administrador'), a
                 a.telefono,
                 a.tipo,
                 a.carrera,
-                a.cargo,
+                a.estamento,
                 a.empresa_servicio,
                 a.unidad,
                 COUNT(rac.id_caso) as total_casos
             FROM Afectados a
             LEFT JOIN RolAfectadoCaso rac ON a.id_afectado = rac.id_afectado
             WHERE a.nombre ILIKE $1
-            GROUP BY a.id_afectado, a.nombre, a.correo, a.telefono, a.tipo, a.carrera, a.cargo, a.empresa_servicio, a.unidad
+            GROUP BY a.id_afectado, a.nombre, a.correo, a.telefono, a.tipo, a.carrera, a.estamento, a.empresa_servicio, a.unidad
             ORDER BY a.nombre ASC
             LIMIT 10
         `, [`%${q}%`]);
@@ -198,17 +198,17 @@ router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
         const { id } = req.params;
         const {
             tipo, nombre, correo, telefono,
-            carrera, cargo, empresa_servicio, unidad
+            carrera, estamento, empresa_servicio, unidad
         } = req.body;
 
         if (!tipo || !nombre) {
             return res.status(400).json({ error: 'Tipo y nombre son requeridos' });
         }
 
-        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador'];
+        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador', 'Funcionario', 'Administrativo'];
         if (!tiposValidos.includes(tipo)) {
             return res.status(400).json({
-                error: 'Tipo inválido. Debe ser: Docente, Estudiante o Colaborador'
+                error: 'Tipo inválido. Debe ser: Docente, Estudiante, Colaborador, Funcionario o Administrativo'
             });
         }
 
@@ -229,11 +229,11 @@ router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
         const result = await pool.query(`
             UPDATE Afectados 
             SET tipo = $1, nombre = $2, correo = $3, telefono = $4, 
-                carrera = $5, cargo = $6, empresa_servicio = $7, unidad = $8,
+                carrera = $5, estamento = $6, empresa_servicio = $7, unidad = $8,
                 fecha_actualizacion = CURRENT_TIMESTAMP
             WHERE id_afectado = $9
             RETURNING *
-        `, [tipo, nombre, correo, telefono, carrera, cargo, empresa_servicio, unidad, id]);
+        `, [tipo, nombre, correo, telefono, carrera, estamento, empresa_servicio, unidad, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Afectado no encontrado' });
@@ -332,24 +332,24 @@ router.post('/casos/:casoId/afectados/nuevo', authMiddleware, Verifica('administ
         const { casoId } = req.params;
         const {
             tipo, nombre, correo, telefono,
-            carrera, cargo, empresa_servicio, unidad, rol
+            carrera, estamento, empresa_servicio, unidad, rol
         } = req.body;
 
         if (!tipo || !nombre || !rol) {
             return res.status(400).json({ error: 'Tipo, nombre y rol son requeridos' });
         }
 
-        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador'];
+        const tiposValidos = ['Docente', 'Estudiante', 'Colaborador', 'Funcionario', 'Administrativo'];
         if (!tiposValidos.includes(tipo)) {
             return res.status(400).json({
-                error: 'Tipo inválido. Debe ser: Docente, Estudiante o Colaborador'
+                error: 'Tipo inválido. Debe ser: Docente, Estudiante, Colaborador, Funcionario o Administrativo'
             });
         }
 
-        const rolesValidos = ['Denunciante', 'Denunciado', 'Testigo'];
+        const rolesValidos = ['Denunciante', 'Denunciado', 'Testigo', 'Informante'];
         if (!rolesValidos.includes(rol)) {
             return res.status(400).json({
-                error: 'Rol inválido. Debe ser: Denunciante, Denunciado o Testigo'
+                error: 'Rol inválido. Debe ser: Denunciante, Denunciado, Testigo o Informante'
             });
         }
 
@@ -377,10 +377,10 @@ router.post('/casos/:casoId/afectados/nuevo', authMiddleware, Verifica('administ
 
         // Crear el afectado
         const afectadoResult = await client.query(`
-            INSERT INTO Afectados (tipo, nombre, correo, telefono, carrera, cargo, empresa_servicio, unidad)
+            INSERT INTO Afectados (tipo, nombre, correo, telefono, carrera, estamento, empresa_servicio, unidad)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
-        `, [tipo, nombre, correo, telefono, carrera, cargo, empresa_servicio, unidad]);
+        `, [tipo, nombre, correo, telefono, carrera, estamento, empresa_servicio, unidad]);
 
         const nuevoAfectado = afectadoResult.rows[0];
 
@@ -436,7 +436,7 @@ router.get('/casos/:casoId/afectados', authMiddleware, Verifica('administrador')
                 a.correo,
                 a.telefono,
                 a.carrera,
-                a.cargo,
+                a.estamento,
                 a.empresa_servicio,
                 a.unidad,
                 a.fecha_creacion,
@@ -468,10 +468,10 @@ router.post('/casos/:casoId/afectados', authMiddleware, Verifica('administrador'
             return res.status(400).json({ error: 'ID del afectado y rol son requeridos' });
         }
 
-        const rolesValidos = ['Denunciante', 'Denunciado', 'Testigo'];
+        const rolesValidos = ['Denunciante', 'Denunciado', 'Testigo', 'Informante'];
         if (!rolesValidos.includes(rol)) {
             return res.status(400).json({
-                error: 'Rol inválido. Debe ser: Denunciante, Denunciado o Testigo'
+                error: 'Rol inválido. Debe ser: Denunciante, Denunciado, Testigo o Informante'
             });
         }
 
@@ -532,10 +532,10 @@ router.put('/casos/:casoId/afectados/:afectadoId', authMiddleware, Verifica('adm
             return res.status(400).json({ error: 'Rol es requerido' });
         }
 
-        const rolesValidos = ['Denunciante', 'Denunciado', 'Testigo'];
+        const rolesValidos = ['Denunciante', 'Denunciado', 'Testigo', 'Informante'];
         if (!rolesValidos.includes(rol)) {
             return res.status(400).json({
-                error: 'Rol inválido. Debe ser: Denunciante, Denunciado o Testigo'
+                error: 'Rol inválido. Debe ser: Denunciante, Denunciado, Testigo o Informante'
             });
         }
 

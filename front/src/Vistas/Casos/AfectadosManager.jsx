@@ -405,6 +405,7 @@ import {
                                 <option value="Denunciante">Denunciante</option>
                                 <option value="Denunciado">Denunciado</option>
                                 <option value="Testigo">Testigo</option>
+                                <option value="Informante">Informante</option>
                             </select>
                         </div>
 
@@ -422,6 +423,8 @@ import {
                                 <option value="Docente">Docente</option>
                                 <option value="Estudiante">Estudiante</option>
                                 <option value="Colaborador">Colaborador</option>
+                                <option value="Funcionario">Funcionario</option>
+                                <option value="Administrativo">Administrativo</option>
                             </select>
                         </div>
 

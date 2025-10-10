@@ -220,23 +220,26 @@ const Estadisticas = () => {
         if (!estadisticasGenerales) return null
 
         const data = {
-            labels: ['Recepcionados', 'En Proceso', 'Finalizados'],
+            labels: ['Recepcionados', 'En Proceso', 'Finalizados', 'En Resolución'],
             datasets: [
                 {
                     data: [
                         estadisticasGenerales.casos_recepcionados,
                         estadisticasGenerales.casos_en_proceso,
-                        estadisticasGenerales.casos_finalizados
+                        estadisticasGenerales.casos_finalizados,
+                        estadisticasGenerales.casos_en_resolucion || 0
                     ],
                     backgroundColor: [
                         'rgba(59, 130, 246, 0.8)',
                         'rgba(245, 158, 11, 0.8)',
-                        'rgba(16, 185, 129, 0.8)'
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(34, 197, 94, 0.8)'
                     ],
                     borderColor: [
                         'rgb(59, 130, 246)',
                         'rgb(245, 158, 11)',
-                        'rgb(16, 185, 129)'
+                        'rgb(16, 185, 129)',
+                        'rgb(34, 197, 94)'
                     ],
                     borderWidth: 2
                 }
@@ -505,6 +508,99 @@ const Estadisticas = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Estadísticas detalladas de afectados */}
+                        {estadisticasAfectados && (
+                            <div className="bg-base-100 p-6 rounded-lg shadow mb-6">
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                    <FaUsers className="text-primary" />
+                                    Análisis Detallado de Afectados
+                                </h3>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    {/* Estadísticas por tipo */}
+                                    <div>
+                                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                            <FaGraduationCap className="text-blue-500" />
+                                            Por Tipo de Afectado
+                                        </h4>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                                                <span className="flex items-center gap-2">
+                                                    <FaGraduationCap className="text-blue-600" />
+                                                    Estudiantes
+                                                </span>
+                                                <span className="font-bold text-blue-600">
+                                                    {estadisticasAfectados.estudiantes}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                                                <span className="flex items-center gap-2">
+                                                    <FaUserTie className="text-green-600" />
+                                                    Docentes
+                                                </span>
+                                                <span className="font-bold text-green-600">
+                                                    {estadisticasAfectados.docentes}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between items-center p-2 bg-purple-50 rounded">
+                                                <span className="flex items-center gap-2">
+                                                    <FaBuilding className="text-purple-600" />
+                                                    Colaboradores
+                                                </span>
+                                                <span className="font-bold text-purple-600">
+                                                    {estadisticasAfectados.colaboradores}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 p-3 bg-base-200 rounded">
+                                            <div className="text-sm text-base-content/70">Total de afectados</div>
+                                            <div className="text-2xl font-bold text-primary">
+                                                {estadisticasAfectados.estudiantes + estadisticasAfectados.docentes + estadisticasAfectados.colaboradores}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Distribución de roles */}
+                                    <div>
+                                        <h4 className="font-semibold mb-3">Roles en Casos</h4>
+                                        <div className="space-y-2">
+                                            {estadisticasAfectados.roles_en_casos && estadisticasAfectados.roles_en_casos.map((rol, index) => (
+                                                <div key={index} className="flex justify-between items-center p-2 bg-base-200 rounded">
+                                                    <span className="capitalize">{rol.rol}</span>
+                                                    <span className="font-bold">{rol.cantidad}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Afectados recurrentes */}
+                                    <div>
+                                        <h4 className="font-semibold mb-3">Afectados Recurrentes</h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                                            {estadisticasAfectados.afectados_recurrentes && estadisticasAfectados.afectados_recurrentes.length > 0 ? (
+                                                estadisticasAfectados.afectados_recurrentes.map((afectado, index) => (
+                                                    <div key={index} className="p-2 bg-warning/10 border border-warning/20 rounded">
+                                                        <div className="font-medium text-sm">{afectado.nombre}</div>
+                                                        <div className="text-xs text-base-content/70">
+                                                            {afectado.tipo} • {afectado.total_casos} casos
+                                                        </div>
+                                                        <div className="text-xs text-warning">
+                                                            Roles: {afectado.roles}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-sm text-base-content/50 text-center py-4">
+                                                    No hay afectados con múltiples casos
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Gráfico de tendencias */}
                         <div className="bg-base-100 p-6 rounded-lg shadow mb-6">
