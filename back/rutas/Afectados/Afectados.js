@@ -192,6 +192,82 @@ router.get('/:id', authMiddleware, Verifica('administrador'), async (req, res) =
     }
 });
 
+// Obtener resumen completo del afectado (casos y entrevistas preliminares)
+router.get('/:id/resumen', authMiddleware, Verifica('administrador'), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Obtener información básica del afectado
+        const afectadoResult = await pool.query(
+            'SELECT * FROM Afectados WHERE id_afectado = $1',
+            [id]
+        );
+
+        if (afectadoResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Afectado no encontrado' });
+        }
+
+        const afectado = afectadoResult.rows[0];
+
+        // Obtener todos los casos en los que participa
+        const casosResult = await pool.query(`
+            SELECT 
+                c.id_caso,
+                c.titulo,
+                c.descripcion,
+                c.estado,
+                c.fecha_creacion,
+                c.fecha_finalizacion,
+                rac.rol
+            FROM Casos c
+            JOIN RolAfectadoCaso rac ON c.id_caso = rac.id_caso
+            WHERE rac.id_afectado = $1
+            ORDER BY c.fecha_creacion DESC
+        `, [id]);
+
+        // Obtener entrevistas preliminares donde aparece
+        const entrevistasResult = await pool.query(`
+            SELECT 
+                id_entrevista_preliminar,
+                persona_entrevistada,
+                tipo_persona,
+                resumen_conversacion,
+                fecha_entrevista,
+                evolucionado_a_caso,
+                id_caso_relacionado
+            FROM EntrevistasPreliminar
+            WHERE id_afectado_creado = $1
+            ORDER BY fecha_entrevista DESC
+        `, [id]);
+
+        // Calcular estadísticas
+        const estadisticas = {
+            total_casos: casosResult.rows.length,
+            total_entrevistas_preliminares: entrevistasResult.rows.length,
+            casos_por_estado: {},
+            roles_en_casos: {}
+        };
+
+        // Agrupar casos por estado
+        casosResult.rows.forEach(caso => {
+            estadisticas.casos_por_estado[caso.estado] =
+                (estadisticas.casos_por_estado[caso.estado] || 0) + 1;
+            estadisticas.roles_en_casos[caso.rol] =
+                (estadisticas.roles_en_casos[caso.rol] || 0) + 1;
+        });
+
+        res.json({
+            ...afectado,
+            ...estadisticas,
+            casos: casosResult.rows,
+            entrevistas_preliminares: entrevistasResult.rows
+        });
+    } catch (error) {
+        console.error('Error obteniendo resumen del afectado:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 // Actualizar afectado
 router.put('/:id', authMiddleware, Verifica('administrador'), async (req, res) => {
     try {

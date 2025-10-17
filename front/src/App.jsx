@@ -12,6 +12,7 @@ import Principal from './Vistas/Principal/Principal';
 import Casos from './Vistas/Casos/Casos';
 import EntrevistaPreliminar from './Vistas/EntrevistaPreliminar/EntrevistaPreliminar';
 import Estadisticas from './Vistas/Estadisticas/Estadisticas';
+import Participantes from './Vistas/Participantes/Participantes';
 function App() {
 
   return (
@@ -38,6 +39,9 @@ function App() {
 
             {/* Ruta de estadísticas */}
             <Route path='/estadisticas' element={<Estadisticas />} />
+
+            {/* Ruta de participantes */}
+            <Route path='/Participantes' element={<Participantes />} />
 
 
 

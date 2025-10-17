@@ -52,6 +52,7 @@ const Navbar = ({ MenuLateral = true }) => {
 
     const Irentrevistas = () => { Navigate('/Entrevistas') }
     const IrPrincipal = () => { Navigate('/Principal') }
+    const IrParticipantes = () => { Navigate('/Participantes') }
 
     const IrCrearBaseDatos = () => { Navigate('/CrearDB') }
     const IrCrearEjercicio = () => { Navigate('/CrearEjercicio') }
@@ -94,8 +95,9 @@ const Navbar = ({ MenuLateral = true }) => {
 
 
                                     <li><a onClick={() => IrEjercicios()}>Estadísticas</a></li>
-                                    <li><a onClick={() => IrPrincipal()}>Casos de convivencia</a></li>
                                     <li><a onClick={() => Irentrevistas()}>Entrevistas preliminar</a></li>
+                                    <li><a onClick={() => IrPrincipal()}>Casos de convivencia</a></li>
+                                    <li><a onClick={() => IrParticipantes()}>Búsqueda de participantes</a></li>
 
 
 
