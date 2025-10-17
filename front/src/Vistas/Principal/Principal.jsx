@@ -660,8 +660,18 @@ const Principal = () => {
                                             </div>
                                         )}
 
-                                        {caso.estado === 'Finalizado' && (caso.comentarios_finalizacion || caso.fecha_finalizacion) && (
-                                            <div className="bg-base-200 p-3 rounded-lg mt-2">
+                                        {/* Información de finalización */}
+                                        {(caso.estado === 'Finalizado' || caso.estado === 'Resolución') && (caso.forma_finalizacion || caso.comentarios_finalizacion || caso.fecha_finalizacion) && (
+                                            <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg mt-2">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="font-semibold text-orange-700">Información de Finalización</span>
+                                                </div>
+                                                {caso.forma_finalizacion && (
+                                                    <div className="mb-2">
+                                                        <span className="text-sm font-semibold">Forma de finalización: </span>
+                                                        <span className="badge badge-warning badge-sm">{caso.forma_finalizacion}</span>
+                                                    </div>
+                                                )}
                                                 {caso.fecha_finalizacion && (
                                                     <div className="text-sm text-gray-600 mb-2">
                                                         <span className="font-semibold">📅 Finalizado el: </span>
@@ -676,7 +686,7 @@ const Principal = () => {
                                                 )}
                                                 {caso.comentarios_finalizacion && (
                                                     <div>
-                                                        <span className="text-sm font-semibold">Motivo de finalización: </span>
+                                                        <span className="text-sm font-semibold">Comentarios: </span>
                                                         <p className="text-sm text-gray-700 mt-1">{caso.comentarios_finalizacion}</p>
                                                     </div>
                                                 )}
@@ -757,7 +767,7 @@ const Principal = () => {
                                                     onClick={() => handleCambiarEstado(caso.id_caso, 'Resolución')}
                                                     className="btn btn-sm btn-success"
                                                 >
-                                                    Cambiar a Resolución
+                                                    Caso en Resolución
                                                 </button>
                                             </>
                                         )}
