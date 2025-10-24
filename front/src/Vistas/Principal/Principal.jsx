@@ -273,10 +273,6 @@ const Principal = () => {
             // Si se quiere cambiar a resolución, abrir modal específico
             if (nuevoEstado === 'Resolución') {
                 const caso = casos.find(c => c.id_caso === casoId)
-                if (caso && caso.estado !== 'Finalizado') {
-                    mostrarToast('El caso debe estar Finalizado antes de poder resolverlo', 'error')
-                    return
-                }
                 abrirResolverCaso(caso)
                 return
             }
@@ -660,11 +656,46 @@ const Principal = () => {
                                             </div>
                                         )}
 
+                                        {/* Información de resolución */}
+                                        {(caso.resolucion || caso.fecha_resolucion) && (
+                                            <div className="bg-success/10 border border-success/20 p-3 rounded-lg mb-2">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <FaCheckCircle className="text-success" />
+                                                    <span className="font-semibold text-success">Información de Resolución</span>
+                                                    <span className={`badge badge-sm ${caso.estado === 'Resolución' ? 'badge-success' : 'badge-ghost'}`}>
+                                                        {caso.estado === 'Resolución' ? 'Activo' : 'Histórico'}
+                                                    </span>
+                                                </div>
+                                                {caso.fecha_resolucion && (
+                                                    <div className="mb-2">
+                                                        <span className="font-semibold">📅 Resuelto el: </span>
+                                                        {new Date(caso.fecha_resolucion).toLocaleDateString('es-ES', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </div>
+                                                )}
+                                                {caso.resolucion && (
+                                                    <div>
+                                                        <span className="text-sm font-semibold">Descripción de la resolución: </span>
+                                                        <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{caso.resolucion}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
                                         {/* Información de finalización */}
-                                        {(caso.estado === 'Finalizado' || caso.estado === 'Resolución') && (caso.forma_finalizacion || caso.comentarios_finalizacion || caso.fecha_finalizacion) && (
+                                        {(caso.forma_finalizacion || caso.comentarios_finalizacion || caso.fecha_finalizacion) && (
                                             <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg mt-2">
                                                 <div className="flex items-center gap-2 mb-2">
+                                                    <FaTimes className="text-orange-700" />
                                                     <span className="font-semibold text-orange-700">Información de Finalización</span>
+                                                    <span className={`badge badge-sm ${caso.estado === 'Finalizado' ? 'badge-error' : 'badge-ghost'}`}>
+                                                        {caso.estado === 'Finalizado' ? 'Activo' : 'Histórico'}
+                                                    </span>
                                                 </div>
                                                 {caso.forma_finalizacion && (
                                                     <div className="mb-2">
@@ -692,34 +723,6 @@ const Principal = () => {
                                                 )}
                                             </div>
                                         )}
-
-                                        {/* Información de resolución */}
-                                        {caso.estado === 'Resolución' && (caso.resolucion || caso.fecha_resolucion) && (
-                                            <div className="bg-success/10 border border-success/20 p-3 rounded-lg mb-2">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <FaCheckCircle className="text-success" />
-                                                    <span className="font-semibold text-success">Caso Resuelto</span>
-                                                </div>
-                                                {caso.fecha_resolucion && (
-                                                    <div>
-                                                        <span className="font-semibold">📅 Resuelto el: </span>
-                                                        {new Date(caso.fecha_resolucion).toLocaleDateString('es-ES', {
-                                                            year: 'numeric',
-                                                            month: 'long',
-                                                            day: 'numeric',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
-                                                    </div>
-                                                )}
-                                                {caso.resolucion && (
-                                                    <div>
-                                                        <span className="text-sm font-semibold">Descripción de la resolución: </span>
-                                                        <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{caso.resolucion}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
                                     </div>
 
                                     <div className="card-actions justify-end mt-4">
@@ -740,6 +743,12 @@ const Principal = () => {
                                                     className="btn btn-sm btn-info"
                                                 >
                                                     Volver a Recepcionado
+                                                </button>
+                                                <button
+                                                    onClick={() => handleCambiarEstado(caso.id_caso, 'Resolución')}
+                                                    className="btn btn-sm btn-success"
+                                                >
+                                                    Caso en Resolución
                                                 </button>
                                             </>
                                         )}
@@ -763,19 +772,14 @@ const Principal = () => {
                                                 >
                                                     Reabrir caso
                                                 </button>
-                                                <button
-                                                    onClick={() => handleCambiarEstado(caso.id_caso, 'Resolución')}
-                                                    className="btn btn-sm btn-success"
-                                                >
-                                                    Caso en Resolución
-                                                </button>
                                             </>
                                         )}
 
-                                        {caso.estado !== 'Finalizado' && caso.estado !== 'Resolución' && (
+                                        {caso.estado !== 'Finalizado' && caso.resolucion && (
                                             <button
                                                 onClick={() => abrirFinalizarCaso(caso)}
                                                 className="btn btn-sm btn-error"
+                                                title="Solo se puede finalizar un caso que tenga resolución"
                                             >
                                                 Finalizar
                                             </button>

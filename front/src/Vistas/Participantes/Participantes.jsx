@@ -157,9 +157,9 @@ const Participantes = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     {/* Lista de resultados */}
-                    <div className="bg-base-100 p-6 rounded-lg shadow-lg">
+                    <div className="lg:col-span-2 bg-base-100 p-6 rounded-lg shadow-lg">
                         <h2 className="text-xl font-bold mb-4">Resultados de Búsqueda</h2>
 
                         {participantes.length === 0 && !loading && (
@@ -207,7 +207,7 @@ const Participantes = () => {
                     </div>
 
                     {/* Detalle del participante */}
-                    <div className="bg-base-100 p-6 rounded-lg shadow-lg">
+                    <div className="lg:col-span-3 bg-base-100 p-6 rounded-lg shadow-lg">
                         <h2 className="text-xl font-bold mb-4">Información del Participante</h2>
 
                         {!participanteSeleccionado && (

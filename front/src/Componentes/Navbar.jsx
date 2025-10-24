@@ -94,10 +94,10 @@ const Navbar = ({ MenuLateral = true }) => {
                                     <div class="divider"></div>
 
 
-                                    <li><a onClick={() => IrEjercicios()}>Estadísticas</a></li>
                                     <li><a onClick={() => Irentrevistas()}>Entrevistas preliminar</a></li>
-                                    <li><a onClick={() => IrPrincipal()}>Casos de convivencia</a></li>
+                                    <li><a onClick={() => IrPrincipal()}>Casos</a></li>
                                     <li><a onClick={() => IrParticipantes()}>Búsqueda de participantes</a></li>
+                                    <li><a onClick={() => IrEjercicios()}>Estadísticas</a></li>
 
 
 

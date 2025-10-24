@@ -104,7 +104,7 @@ const Casos = () => {
                     onClick={() => SetterSeleccionado('afectados')}
                 >
                     <FaUsers className="mr-2" />
-                    Afectados
+                    Participantes
                 </button>
 
                 <button

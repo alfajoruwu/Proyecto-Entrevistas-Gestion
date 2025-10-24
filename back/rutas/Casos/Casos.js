@@ -318,11 +318,10 @@ router.put('/:id/estado', authMiddleware, Verifica('administrador'), async (req,
 
         const estadoActual = casoActual.rows[0].estado;
 
-        // Validar transición de estado: solo se puede ir a Resolución desde Finalizado
-        if (estado === 'Resolución' && estadoActual !== 'Finalizado') {
+        // Validar que no se pueda retroceder a estados anteriores desde Resolución
+        if (estadoActual === 'Resolución' && estado !== 'En Proceso') {
             return res.status(400).json({
-                error: 'No se puede cambiar a Resolución. El caso debe estar Finalizado primero.',
-                flujo: 'Recepción → En Proceso → Finalizado → Resolución'
+                error: 'Desde Resolución solo se puede volver a En Proceso'
             });
         }
 
@@ -415,18 +414,18 @@ router.put('/:id/resolver', authMiddleware, Verifica('administrador'), async (re
             });
         }
 
-        // Verificar que el caso existe y está finalizado
+        // Verificar que el caso existe
         const casoActual = await pool.query('SELECT * FROM Casos WHERE id_caso = $1', [id]);
 
         if (casoActual.rows.length === 0) {
             return res.status(404).json({ error: 'Caso no encontrado' });
         }
 
-        if (casoActual.rows[0].estado !== 'Finalizado') {
+        // Verificar que el caso no esté ya en resolución
+        if (casoActual.rows[0].estado === 'Resolución') {
             return res.status(400).json({
-                error: 'Solo se puede cambiar a Resolución un caso que esté Finalizado',
-                estadoActual: casoActual.rows[0].estado,
-                flujo: 'Recepción → En Proceso → Finalizado → Resolución'
+                error: 'El caso ya está en estado de Resolución',
+                estadoActual: casoActual.rows[0].estado
             });
         }
 
